@@ -1,0 +1,46 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  techStack   String
+  githubUrl   String
+  liveUrl     String?
+  image       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  skills      Skill[]   // Many-to-many relation 
+}
+
+model Skill {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  projects  Project[] // Many-to-many relation 
+}
+
