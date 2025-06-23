@@ -1,0 +1,53 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input ContactInput {
+  email: String!
+  message: String!
+  name: String!
+}
+
+input CreateProjectDto {
+  description: String!
+  githubUrl: String!
+  image: String
+  liveUrl: String
+  skillIds: [String!]
+  techStack: String!
+  title: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Mutation {
+  createProject(input: CreateProjectDto!): Project!
+  sendContactMessage(input: ContactInput!): Boolean!
+}
+
+type Project {
+  createdAt: DateTime!
+  description: String!
+  githubUrl: String!
+  id: ID!
+  image: String
+  liveUrl: String
+  skills: [Skill!]!
+  techStack: String!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type Query {
+  hello: String!
+  projects: [Project!]!
+  skills: [Skill!]!
+}
+
+type Skill {
+  id: ID!
+  name: String!
+}
