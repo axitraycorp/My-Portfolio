@@ -9,14 +9,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Message {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String
-  message   String
-  createdAt DateTime @default(now())
-}
-
 model ContactMessage {
   id        String   @id @default(uuid())
   name      String
@@ -26,21 +18,30 @@ model ContactMessage {
 }
 
 model Project {
-  id          String    @id @default(uuid())
+  id          String         @id @default(uuid())
   title       String
   description String
   techStack   String
   githubUrl   String
   liveUrl     String?
   image       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  skills      Skill[]   // Many-to-many relation 
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  skills      ProjectSkill[]
 }
 
 model Skill {
-  id        String    @id @default(uuid())
-  name      String    @unique
-  projects  Project[] // Many-to-many relation 
+  id       String         @id @default(uuid())
+  name     String         @unique
+  projects ProjectSkill[]
 }
 
+// Explicit join table (matches the 20250617134255 migration)
+model ProjectSkill {
+  projectId String
+  skillId   String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skill     Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, skillId])
+}

@@ -1,4 +1,3 @@
-// contact.resolver.ts
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { ContactService } from './contact.service';
 import { ContactInput } from './dto/contact.input';
@@ -9,6 +8,7 @@ export class ContactResolver {
 
   @Mutation(() => Boolean)
   async sendContactMessage(@Args('input') input: ContactInput) {
-    return this.contactService.send(input); 
+    await this.contactService.createMessage(input);
+    return true;
   }
 }

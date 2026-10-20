@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+const inputClass =
+   "w-full border border-gray-300 dark:border-neutral-700 bg-transparent rounded-lg p-2 mt-1";
+
 export function ContactForm() {
    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
    const [error, setError] = useState<string | null>(null);
@@ -20,18 +23,23 @@ export function ContactForm() {
          message: formData.get("message"),
       };
 
-      const res = await fetch("/api/contact", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify(payload),
-      });
+      try {
+         const res = await fetch("/api/contact", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+         });
 
-      if (res.ok) {
-         setStatus("success");
-         form.reset();
-      } else {
-         const { error } = await res.json();
-         setError(error ?? "Something went wrong");
+         if (res.ok) {
+            setStatus("success");
+            form.reset();
+         } else {
+            const { error } = await res.json().catch(() => ({ error: null }));
+            setError(error ?? "Something went wrong");
+            setStatus("error");
+         }
+      } catch {
+         setError("Network error, please try again");
          setStatus("error");
       }
    }
@@ -42,26 +50,14 @@ export function ContactForm() {
             <label htmlFor="name" className="block font-medium">
                Name
             </label>
-            <input
-               required
-               name="name"
-               id="name"
-               type="text"
-               className="w-full border border-gray-300 rounded-lg p-2 mt-1"
-            />
+            <input required minLength={2} name="name" id="name" type="text" className={inputClass} />
          </div>
 
          <div>
             <label htmlFor="email" className="block font-medium">
                Email
             </label>
-            <input
-               required
-               name="email"
-               id="email"
-               type="email"
-               className="w-full border border-gray-300 rounded-lg p-2 mt-1"
-            />
+            <input required name="email" id="email" type="email" className={inputClass} />
          </div>
 
          <div>
@@ -70,16 +66,17 @@ export function ContactForm() {
             </label>
             <textarea
                required
+               minLength={10}
                name="message"
                id="message"
                rows={5}
-               className="w-full border border-gray-300 rounded-lg p-2 mt-1"
+               className={inputClass}
             />
          </div>
 
          <button
             type="submit"
-            className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+            className="bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition disabled:opacity-60"
             disabled={status === "loading"}
          >
             {status === "loading" ? "Sending..." : "Send Message"}

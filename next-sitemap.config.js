@@ -1,5 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-    siteUrl: "https://hagon.dev", // change this to your real domain
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://hagon.dev",
     generateRobotsTxt: true,
+    exclude: ["/projects/new", "/api/*"],
 };

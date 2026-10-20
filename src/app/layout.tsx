@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import { siteConfig } from "@/config/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,13 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hagon | Full-Stack Web Architect",
-  description: "Portfolio of Hagon, a Senior Full-Stack Developer & Tech Architect.",
-  metadataBase: new URL("https://your-domain.com"),
+  title: siteConfig.title,
+  description: siteConfig.description,
+  metadataBase: new URL(siteConfig.url),
   openGraph: {
-    title: "Hagon | Full-Stack Web Architect",
+    title: siteConfig.title,
     description: "Explore projects, architecture, and deep technical insights from Hagon.",
-    url: "https://your-domain.com",
+    url: siteConfig.url,
     siteName: "Hagon Portfolio",
     type: "website",
   },
@@ -39,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Navbar />
         <main className="min-h-screen max-w-5xl mx-auto p-6">{children}</main>

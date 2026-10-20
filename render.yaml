@@ -1,0 +1,24 @@
+# Render Blueprint: deploys the NestJS API from /backend.
+# Dashboard -> New -> Blueprint -> pick this repo.
+services:
+  - type: web
+    name: portfolio-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    # --include=dev: nest CLI and prisma are devDependencies needed to build
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
+    # Free plan has no pre-deploy step, so migrations run on start
+    startCommand: npx prisma migrate deploy && npm run start:prod
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        sync: false # paste your Neon connection string
+      - key: FRONTEND_ORIGIN
+        sync: false # your Vercel URL, e.g. https://my-portfolio.vercel.app
+      - key: ADMIN_TOKEN
+        generateValue: true

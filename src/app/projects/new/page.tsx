@@ -3,33 +3,51 @@
 import { useEffect, useState } from "react";
 import { graphqlRequest } from "@/lib/api";
 
+type Skill = { id: string; name: string };
+
+const TOKEN_KEY = "portfolio-admin-token";
+const inputClass = "w-full border border-gray-300 dark:border-neutral-700 bg-transparent p-2 rounded";
+
+const emptyForm = {
+   title: "",
+   description: "",
+   techStack: "",
+   githubUrl: "",
+   liveUrl: "",
+   image: "",
+   skillIds: [] as string[],
+};
+
+function readStoredToken() {
+   try {
+      return sessionStorage.getItem(TOKEN_KEY) ?? "";
+   } catch {
+      return "";
+   }
+}
+
 export default function NewProjectPage() {
-   const [skills, setSkills] = useState<any[]>([]);
-   const [form, setForm] = useState({
-      title: "",
-      description: "",
-      techStack: "",
-      githubUrl: "",
-      liveUrl: "",
-      image: "",
-      skillIds: [] as string[],
-   });
+   const [skills, setSkills] = useState<Skill[]>([]);
+   const [form, setForm] = useState(emptyForm);
+   const [adminToken, setAdminToken] = useState("");
+   const [newSkill, setNewSkill] = useState("");
    const [status, setStatus] = useState("");
 
    useEffect(() => {
-      async function loadSkills() {
-         const data = await graphqlRequest(`
-        query {
-          skills {
-            id
-            name
-          }
-        }
-      `);
-         setSkills(data.skills);
-      }
-      loadSkills();
+      setAdminToken(readStoredToken());
+      graphqlRequest<{ skills: Skill[] }>(`query { skills { id name } }`)
+         .then((data) => setSkills(data.skills))
+         .catch((err: Error) => setStatus(`Could not load skills: ${err.message}`));
    }, []);
+
+   const updateToken = (value: string) => {
+      setAdminToken(value);
+      try {
+         sessionStorage.setItem(TOKEN_KEY, value);
+      } catch {
+         // storage unavailable (private mode); token just won't persist
+      }
+   };
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm({ ...form, [e.target.name]: e.target.value });
@@ -44,36 +62,58 @@ export default function NewProjectPage() {
       }));
    };
 
+   const handleAddSkill = async () => {
+      if (!newSkill.trim()) return;
+      try {
+         const { createSkill } = await graphqlRequest<{ createSkill: Skill }>(
+            `mutation CreateSkill($input: CreateSkillDto!) { createSkill(input: $input) { id name } }`,
+            { variables: { input: { name: newSkill.trim() } }, adminToken }
+         );
+         setSkills((prev) =>
+            prev.some((s) => s.id === createSkill.id)
+               ? prev
+               : [...prev, createSkill].sort((a, b) => a.name.localeCompare(b.name))
+         );
+         setForm((prev) => ({
+            ...prev,
+            skillIds: prev.skillIds.includes(createSkill.id)
+               ? prev.skillIds
+               : [...prev.skillIds, createSkill.id],
+         }));
+         setNewSkill("");
+      } catch (err) {
+         setStatus(`Error: ${(err as Error).message}`);
+      }
+   };
+
    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       setStatus("Submitting...");
 
+      // Optional URL fields must be omitted, not sent as "", to pass validation
+      const input = {
+         ...form,
+         liveUrl: form.liveUrl || undefined,
+         image: form.image || undefined,
+      };
+
       try {
          await graphqlRequest(
             `
-        mutation CreateProject($input: CreateProjectInput!) {
+        mutation CreateProject($input: CreateProjectDto!) {
           createProject(input: $input) {
             id
             title
           }
         }
         `,
-            { input: form }
+            { variables: { input }, adminToken }
          );
 
          setStatus("Project created!");
-         // Reset form
-         setForm({
-            title: "",
-            description: "",
-            techStack: "",
-            githubUrl: "",
-            liveUrl: "",
-            image: "",
-            skillIds: [],
-         });
-      } catch (err: any) {
-         setStatus(`Error: ${err.message}`);
+         setForm(emptyForm);
+      } catch (err) {
+         setStatus(`Error: ${(err as Error).message}`);
       }
    };
 
@@ -82,12 +122,21 @@ export default function NewProjectPage() {
          <h1 className="text-2xl mb-4">Create New Project</h1>
          <form onSubmit={handleSubmit} className="space-y-4">
             <input
+               type="password"
+               placeholder="Admin token"
+               value={adminToken}
+               onChange={(e) => updateToken(e.target.value)}
+               required
+               autoComplete="off"
+               className={inputClass}
+            />
+            <input
                name="title"
                placeholder="Title"
                value={form.title}
                onChange={handleChange}
                required
-               className="w-full border p-2 rounded"
+               className={inputClass}
             />
             <textarea
                name="description"
@@ -95,35 +144,39 @@ export default function NewProjectPage() {
                value={form.description}
                onChange={handleChange}
                required
-               className="w-full border p-2 rounded"
+               className={inputClass}
             />
             <input
                name="techStack"
-               placeholder="Tech Stack"
+               placeholder="Tech Stack (comma-separated)"
                value={form.techStack}
                onChange={handleChange}
-               className="w-full border p-2 rounded"
+               className={inputClass}
             />
             <input
                name="githubUrl"
+               type="url"
                placeholder="GitHub URL"
                value={form.githubUrl}
                onChange={handleChange}
-               className="w-full border p-2 rounded"
+               required
+               className={inputClass}
             />
             <input
                name="liveUrl"
-               placeholder="Live URL"
+               type="url"
+               placeholder="Live URL (optional)"
                value={form.liveUrl}
                onChange={handleChange}
-               className="w-full border p-2 rounded"
+               className={inputClass}
             />
             <input
                name="image"
-               placeholder="Image URL"
+               type="url"
+               placeholder="Image URL (optional)"
                value={form.image}
                onChange={handleChange}
-               className="w-full border p-2 rounded"
+               className={inputClass}
             />
 
             <div>
@@ -142,9 +195,26 @@ export default function NewProjectPage() {
                      </button>
                   ))}
                </div>
+               <div className="flex gap-2 mt-2">
+                  <input
+                     placeholder="New skill"
+                     value={newSkill}
+                     onChange={(e) => setNewSkill(e.target.value)}
+                     onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                           e.preventDefault();
+                           handleAddSkill();
+                        }
+                     }}
+                     className={inputClass}
+                  />
+                  <button type="button" onClick={handleAddSkill} className="px-3 rounded border">
+                     Add
+                  </button>
+               </div>
             </div>
 
-            <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded">
+            <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">
                Create Project
             </button>
 

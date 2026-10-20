@@ -1,5 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Skill } from 'src/skill/models/skill.model';
+import { Skill } from '../../skill/models/skill.model';
 
 @ObjectType()
 export class Project {

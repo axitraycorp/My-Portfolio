@@ -1,34 +1,23 @@
-"use client";
-
-import { withFadeIn } from "@/lib/withFadeIn";
+import type { Metadata } from "next";
+import FadeIn from "@/components/FadeIn";
 import ProjectCard from "@/components/ProjectCard";
+import { getProjects } from "@/data/projectData";
 
-function ProjectsPage() {
+export const metadata: Metadata = { title: "Projects | Hagon" };
+
+export default async function ProjectsPage() {
+  const projects = await getProjects();
+
   return (
-    <section className="space-y-12 py-16">
-      <h1 className="text-3xl font-bold">Projects</h1>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <ProjectCard
-          title="DevOps Dashboard"
-          description="CI/CD pipelines with GitHub Actions, Docker, and Kubernetes."
-          tech={["Next.js", "Docker", "K8s", "GitHub Actions"]}
-          link="https://github.com/yourusername/devops-dashboard"
-        />
-        <ProjectCard
-          title="AI SaaS Starter"
-          description="OpenAI-powered SaaS starter with billing and auth."
-          tech={["Next.js", "Stripe", "Clerk", "OpenAI"]}
-          link="https://github.com/yourusername/ai-saas-starter"
-        />
-        <ProjectCard
-          title="Realtime Chat App"
-          description="Scalable WebSocket chat using Supabase & Next.js."
-          tech={["Next.js", "Supabase", "Tailwind", "TypeScript"]}
-          link="https://github.com/yourusername/realtime-chat"
-        />
-      </div>
-    </section>
+    <FadeIn>
+      <section className="space-y-12 py-16">
+        <h1 className="text-3xl font-bold">Projects</h1>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => (
+            <ProjectCard key={project.title} {...project} />
+          ))}
+        </div>
+      </section>
+    </FadeIn>
   );
 }
-
-export default withFadeIn(ProjectsPage);
