@@ -23,6 +23,19 @@ import { SkillModule } from './skill/skill.module';
           : join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       context: ({ req }: { req: Request }) => ({ req }),
+      // Surface class-validator details instead of a bare "Bad Request Exception"
+      formatError: (error) => {
+        const original = error.extensions?.originalError as
+          | { message?: string | string[] }
+          | undefined;
+        return {
+          message: Array.isArray(original?.message)
+            ? original.message.join(', ')
+            : error.message,
+          path: error.path,
+          extensions: { code: error.extensions?.code },
+        };
+      },
     }),
     PrismaModule,
     ContactModule,
