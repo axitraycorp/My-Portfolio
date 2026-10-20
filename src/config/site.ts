@@ -7,6 +7,6 @@ export const siteConfig = {
   links: {
     github: "https://github.com/axitraycorp",
     linkedin: "https://www.linkedin.com/in/hn-axi-tray/",
-    email: "mailto:nguyenviethoang14112000@gmail.com",
+    email: "mailto:axitray@gmail.com",
   },
 };
