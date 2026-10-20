@@ -1,6 +1,6 @@
 import * as content from "@/content/profile";
 import { publicList, publicText, formatYears } from "@/lib/content";
-import { HIGHLIGHT_IDS } from "./tool-schemas";
+import { HIGHLIGHT_IDS } from "./tool-ids";
 
 export type PortfolioContent = Pick<
    typeof content,

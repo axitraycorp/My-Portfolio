@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { StreamEvent } from "@/lib/assistant/protocol";
-import { parseToolCall, type ToolCall } from "@/lib/assistant/tool-schemas";
+import { parseToolCallClient, type ToolCall } from "@/lib/assistant/tool-schemas";
 import { MAX_HISTORY, MAX_USER_MESSAGE_CHARS } from "@/lib/assistant/validation";
 
 export type UiMessage = {
@@ -73,7 +73,7 @@ export function useAssistantChat({
                   appendToAssistant(assistant.id, event.text);
                   break;
                case "tool": {
-                  const call = parseToolCall(event.call.name, event.call.input);
+                  const call = parseToolCallClient(event.call.name, event.call.input);
                   if (call) onTool(call);
                   break;
                }

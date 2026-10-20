@@ -7,7 +7,7 @@ import { AssistantRoot } from "@/components/assistant/AssistantRoot";
 import { ViewTransitionListener } from "@/lib/view-transition";
 import { headScript } from "@/lib/theme";
 import { siteConfig } from "@/config/site";
-import { education, profile, skillGroups } from "@/content/profile";
+import { education, profile, sections, skillGroups, tourSteps } from "@/content/profile";
 import { publicText } from "@/lib/content";
 
 const display = Space_Grotesk({
@@ -93,13 +93,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <a href="#main" className="skip-link">
                Skip to content
             </a>
-            <Navbar />
+            <Navbar name={profile.name} links={sections.filter((s) => s.id !== "hero")} />
             <main id="main" tabIndex={-1} className="outline-none">
                {children}
             </main>
             <Footer />
             <ViewTransitionListener />
-            <AssistantRoot />
+            <AssistantRoot tourSteps={tourSteps} />
          </body>
       </html>
    );

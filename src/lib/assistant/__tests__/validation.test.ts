@@ -5,7 +5,7 @@ import {
    trimHistory,
    type ChatMessage,
 } from "../validation";
-import { parseToolCall } from "../tool-schemas";
+import { parseToolCall } from "../tool-ids";
 import { TokenBucketLimiter } from "../rate-limit";
 
 describe("parseAssistantRequest", () => {

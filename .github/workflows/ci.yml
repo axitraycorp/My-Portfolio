@@ -31,6 +31,13 @@ jobs:
       - run: npm test
       - run: npm run build
 
+      - name: No TODO placeholders shipped to the browser
+        run: |
+          if grep -rl "TODO:" .next/static .next/server/app --include=*.js --include=*.html --include=*.rsc; then
+            echo "::error::profile.ts TODO placeholders leaked into the client bundle or prerendered pages"
+            exit 1
+          fi
+
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 

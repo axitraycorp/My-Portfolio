@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { profile, sections } from "@/content/profile";
+import type { SectionId } from "@/content/profile";
 import { ThemeToggle } from "@/components/hud/ThemeToggle";
 
-const links = sections.filter((s) => s.id !== "hero");
+type NavLink = { id: SectionId; label: string };
 
-export default function Navbar() {
+/** Content comes from the server layout so profile.ts never ships to the browser. */
+export default function Navbar({ name, links }: { name: string; links: NavLink[] }) {
    const [isOpen, setIsOpen] = useState(false);
 
    useEffect(() => {
@@ -28,7 +29,7 @@ export default function Navbar() {
                href="/"
                className="group flex items-baseline gap-2xs font-display text-lead font-semibold tracking-tight"
             >
-               {profile.name}
+               {name}
                <span className="font-mono text-caption font-normal text-camera transition-colors group-hover:text-radar">
                   /unit-7
                </span>

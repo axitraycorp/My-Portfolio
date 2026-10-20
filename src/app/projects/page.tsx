@@ -3,6 +3,7 @@ import { projects } from "@/content/profile";
 import { getLabProjects } from "@/data/projectData";
 import { TopicLabel } from "@/components/hud/TopicLabel";
 import { ProjectCard } from "@/components/sections/ProjectCard";
+import { toCardData } from "@/components/sections/project-card-data";
 
 export const metadata: Metadata = {
    title: "Projects",
@@ -26,7 +27,7 @@ export default async function ProjectsPage() {
                <ul className="project-cards__grid">
                   {projects.map((project) => (
                      <li key={project.slug}>
-                        <ProjectCard project={project} />
+                        <ProjectCard project={toCardData(project)} />
                      </li>
                   ))}
                </ul>

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ArrowLeft, ArrowRight, Send, X } from "lucide-react";
 import clsx from "clsx";
-import { tourSteps } from "@/content/profile";
+import type { TourStep } from "@/content/profile";
 import { TopicLabel } from "@/components/hud/TopicLabel";
 import { useTransitionNavigate } from "@/lib/view-transition";
 import type { ToolCall } from "@/lib/assistant/tool-schemas";
@@ -28,15 +28,16 @@ type Props = {
    open: boolean;
    onClose: () => void;
    request: (OpenAssistantDetail & { id: number }) | null;
+   /** Passed from the server so profile.ts never ships in the client bundle. */
+   tourSteps: TourStep[];
 };
 
 /** Element highlighted for a tour step: its explicit target, else the section heading. */
-function tourTarget(index: number): Highlight {
-   const step = tourSteps[index];
+function tourTarget(step: TourStep): Highlight {
    return { elementId: step.highlight ?? `${step.sectionId}-title`, label: step.title };
 }
 
-export default function AssistantPanel({ open, onClose, request }: Props) {
+export default function AssistantPanel({ open, onClose, request, tourSteps }: Props) {
    const panelRef = useRef<HTMLDivElement>(null);
    const inputRef = useRef<HTMLTextAreaElement>(null);
    const pathname = usePathname();
@@ -57,12 +58,15 @@ export default function AssistantPanel({ open, onClose, request }: Props) {
       else void runTool(call, ctxRef.current);
    }, []);
 
-   const goToStep = useCallback((index: number) => {
-      const clamped = Math.max(0, Math.min(tourSteps.length - 1, index));
-      setStep(clamped);
-      const target = tourTarget(clamped);
-      void runTool({ name: "highlight_element", input: target }, ctxRef.current);
-   }, []);
+   const goToStep = useCallback(
+      (index: number) => {
+         const clamped = Math.max(0, Math.min(tourSteps.length - 1, index));
+         setStep(clamped);
+         const target = tourTarget(tourSteps[clamped]);
+         void runTool({ name: "highlight_element", input: target }, ctxRef.current);
+      },
+      [tourSteps]
+   );
 
    const startTour = useCallback(
       (from = 0) => {

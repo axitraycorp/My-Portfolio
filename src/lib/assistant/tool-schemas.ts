@@ -1,61 +1,70 @@
 import { z } from "zod";
-import { metrics, projects, sections } from "@/content/profile";
 
 /*
- * Tool input schemas, shared by the API route (validates before streaming a
- * tool call) and the browser (validates again before running it). No SDK
- * imports here so it is safe to bundle client-side.
+ * Tool input schemas. Client-safe: no content or SDK imports, so profile.ts
+ * (and its TODO placeholders) never ends up in the browser bundle.
+ *
+ * The server builds strict schemas from the real ids in profile.ts
+ * (see tool-ids.ts). The browser uses the structural schemas below as a second
+ * check on events from our own route, which has already enforced the ids.
  */
 
-const sectionIds = sections.map((s) => s.id) as [string, ...string[]];
-const projectSlugs = projects.map((p) => p.slug) as [string, ...string[]];
-const metricIds = metrics.map((m) => m.id) as [string, ...string[]];
+type Ids = [string, ...string[]];
 
-/** Element ids the assistant may draw a bounding box around. */
-export const HIGHLIGHT_IDS = [
-   "architecture",
-   "specs",
-   "timeline",
-   ...[1, 2, 3, 4, 5, 6].map((n) => `milestone-${n}`),
-   "metrics-table",
-   ...metrics.map((m) => `metric-${m.id}`),
-   ...projects.filter((p) => !p.flagship).map((p) => `project-${p.slug}`),
-   "skills-transfer",
-   "contact-email",
-] as [string, ...string[]];
-
-export const toolInputSchemas = {
-   scroll_to_section: z.object({ sectionId: z.enum(sectionIds) }).strict(),
-   highlight_element: z
-      .object({
-         elementId: z.enum(HIGHLIGHT_IDS),
-         label: z.string().min(1).max(40),
-      })
-      .strict(),
-   open_project: z.object({ slug: z.enum(projectSlugs) }).strict(),
-   show_metric: z.object({ metricId: z.enum(metricIds) }).strict(),
-   suggest_questions: z
-      .object({ questions: z.array(z.string().min(3).max(90)).min(1).max(3) })
-      .strict(),
+export type ToolIds = {
+   sections: Ids;
+   highlights: Ids;
+   projects: Ids;
+   metrics: Ids;
 };
 
-export type ToolName = keyof typeof toolInputSchemas;
+const id = (allowed?: Ids) => (allowed ? z.enum(allowed) : z.string().min(1).max(80));
+
+export function makeToolSchemas(ids?: ToolIds) {
+   return {
+      scroll_to_section: z.object({ sectionId: id(ids?.sections) }).strict(),
+      highlight_element: z
+         .object({
+            elementId: id(ids?.highlights),
+            label: z.string().min(1).max(40),
+         })
+         .strict(),
+      open_project: z.object({ slug: id(ids?.projects) }).strict(),
+      show_metric: z.object({ metricId: id(ids?.metrics) }).strict(),
+      suggest_questions: z
+         .object({ questions: z.array(z.string().min(3).max(90)).min(1).max(3) })
+         .strict(),
+   };
+}
+
+type Schemas = ReturnType<typeof makeToolSchemas>;
+
+export type ToolName = keyof Schemas;
 
 export type ToolCall = {
-   [K in ToolName]: { name: K; input: z.infer<(typeof toolInputSchemas)[K]> };
+   [K in ToolName]: { name: K; input: z.infer<Schemas[K]> };
 }[ToolName];
 
 export function isToolName(name: string): name is ToolName {
-   return Object.prototype.hasOwnProperty.call(toolInputSchemas, name);
+   return [
+      "scroll_to_section",
+      "highlight_element",
+      "open_project",
+      "show_metric",
+      "suggest_questions",
+   ].includes(name);
 }
 
 /** Returns a typed tool call, or null if the name is unknown or the input is invalid. */
-export function parseToolCall(name: string, input: unknown): ToolCall | null {
+export function parseToolCallWith(schemas: Schemas, name: string, input: unknown): ToolCall | null {
    if (!isToolName(name)) return null;
-   const result = toolInputSchemas[name].safeParse(input);
+   const result = schemas[name].safeParse(input);
    return result.success ? ({ name, input: result.data } as ToolCall) : null;
 }
 
-export const SECTION_IDS = sectionIds;
-export const PROJECT_SLUGS = projectSlugs;
-export const METRIC_IDS = metricIds;
+const structural = makeToolSchemas();
+
+/** Browser-side check (structure only). */
+export function parseToolCallClient(name: string, input: unknown): ToolCall | null {
+   return parseToolCallWith(structural, name, input);
+}

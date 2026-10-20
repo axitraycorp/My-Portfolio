@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { TourStep } from "@/content/profile";
 import { OPEN_EVENT, type OpenAssistantDetail } from "./events";
 
 const loadPanel = () => import("./AssistantPanel");
@@ -12,7 +13,7 @@ const AssistantPanel = dynamic(loadPanel, { ssr: false, loading: () => null });
  * fetched on first open (prefetched on hover/focus), so it never affects the
  * first render. Once mounted it stays mounted (hidden) to keep the conversation.
  */
-export function AssistantRoot() {
+export function AssistantRoot({ tourSteps }: { tourSteps: TourStep[] }) {
    const launcherRef = useRef<HTMLButtonElement>(null);
    /** Element that opened the panel; focus returns there on close. */
    const openerRef = useRef<HTMLElement | null>(null);
@@ -23,7 +24,8 @@ export function AssistantRoot() {
    useEffect(() => {
       const onOpen = (e: Event) => {
          const detail = (e as CustomEvent<OpenAssistantDetail>).detail ?? {};
-         openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+         openerRef.current =
+            document.activeElement instanceof HTMLElement ? document.activeElement : null;
          setMounted(true);
          setOpen(true);
          setRequest({ ...detail, id: Date.now() });
@@ -37,7 +39,10 @@ export function AssistantRoot() {
       // After re-render: on phones the launcher is hidden while the panel is open
       requestAnimationFrame(() => {
          const opener = openerRef.current;
-         const target = opener && opener.isConnected && opener.offsetParent !== null ? opener : launcherRef.current;
+         const target =
+            opener && opener.isConnected && opener.offsetParent !== null
+               ? opener
+               : launcherRef.current;
          target?.focus();
          openerRef.current = null;
       });
@@ -69,7 +74,9 @@ export function AssistantRoot() {
                <span className="assistant-launcher__pupil" />
             </span>
          </button>
-         {mounted && <AssistantPanel open={open} onClose={close} request={request} />}
+         {mounted && (
+            <AssistantPanel open={open} onClose={close} request={request} tourSteps={tourSteps} />
+         )}
       </>
    );
 }

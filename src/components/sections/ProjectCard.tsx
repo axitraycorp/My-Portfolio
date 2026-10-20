@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import type { Project } from "@/content/profile";
+import type { ProjectCardData } from "./project-card-data";
 import { StatusPill } from "@/components/hud/StatusPill";
 import { TransitionLink } from "@/lib/view-transition";
 
@@ -10,7 +10,7 @@ import { TransitionLink } from "@/lib/view-transition";
  * border. The title and frame share view-transition names with the detail
  * page header, so the card morphs into it on navigation.
  */
-export function ProjectCard({ project }: { project: Project }) {
+export function ProjectCard({ project }: { project: ProjectCardData }) {
    const ref = useRef<HTMLAnchorElement>(null);
 
    const onPointerMove = (e: React.PointerEvent<HTMLAnchorElement>) => {

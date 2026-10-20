@@ -1,5 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
-import { HIGHLIGHT_IDS, METRIC_IDS, PROJECT_SLUGS, SECTION_IDS } from "./tool-schemas";
+import { HIGHLIGHT_IDS, METRIC_IDS, PROJECT_SLUGS, SECTION_IDS } from "./tool-ids";
 
 /**
  * Tool definitions sent to Claude. The browser executes them; the route never

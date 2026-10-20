@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { buildSystemPrompt } from "@/lib/assistant/prompt";
 import { assistantTools } from "@/lib/assistant/tools";
-import { parseToolCall } from "@/lib/assistant/tool-schemas";
+import { parseToolCall } from "@/lib/assistant/tool-ids";
 import { parseAssistantRequest, trimHistory } from "@/lib/assistant/validation";
 import { TokenBucketLimiter, clientIp } from "@/lib/assistant/rate-limit";
 import type { ErrorBody, StreamEvent } from "@/lib/assistant/protocol";
