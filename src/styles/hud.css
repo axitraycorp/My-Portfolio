@@ -1,0 +1,307 @@
+/* HUD primitives: frames, labels, pills, bounding boxes, buttons. */
+
+@layer components {
+   /* ── HudFrame: corner brackets drawn with background gradients (no extra DOM) */
+   .hud-frame {
+      --hud-c: var(--line-strong);
+      --hud-l: 14px;
+      --hud-w: 1.5px;
+      position: relative;
+      background:
+         linear-gradient(var(--hud-c), var(--hud-c)) top left / var(--hud-l) var(--hud-w),
+         linear-gradient(var(--hud-c), var(--hud-c)) top left / var(--hud-w) var(--hud-l),
+         linear-gradient(var(--hud-c), var(--hud-c)) top right / var(--hud-l) var(--hud-w),
+         linear-gradient(var(--hud-c), var(--hud-c)) top right / var(--hud-w) var(--hud-l),
+         linear-gradient(var(--hud-c), var(--hud-c)) bottom left / var(--hud-l) var(--hud-w),
+         linear-gradient(var(--hud-c), var(--hud-c)) bottom left / var(--hud-w) var(--hud-l),
+         linear-gradient(var(--hud-c), var(--hud-c)) bottom right / var(--hud-l) var(--hud-w),
+         linear-gradient(var(--hud-c), var(--hud-c)) bottom right / var(--hud-w) var(--hud-l);
+      background-repeat: no-repeat;
+   }
+   .hud-frame[data-channel="camera"] {
+      --hud-c: var(--camera);
+   }
+   .hud-frame[data-channel="radar"] {
+      --hud-c: var(--radar);
+   }
+   .hud-frame[data-channel="fused"] {
+      --hud-c: var(--fused);
+   }
+   .hud-frame[data-surface] {
+      background-color: var(--surface);
+   }
+
+   /* ── TopicLabel */
+   .topic-label {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.5ch;
+      font-family: var(--font-mono);
+      font-size: var(--step--2);
+      letter-spacing: 0.02em;
+      color: var(--muted);
+      white-space: nowrap;
+   }
+   .topic-label__topic {
+      color: var(--chan, var(--camera));
+   }
+   .topic-label__value {
+      color: var(--ink);
+      white-space: normal;
+   }
+   .topic-label::before {
+      content: "";
+      width: 0.45em;
+      height: 0.45em;
+      align-self: center;
+      border-radius: 50%;
+      background: var(--chan, var(--camera));
+   }
+
+   [data-channel="camera"] {
+      --chan: var(--camera);
+   }
+   [data-channel="radar"] {
+      --chan: var(--radar);
+   }
+   [data-channel="fused"] {
+      --chan: var(--fused);
+   }
+   [data-channel="neutral"] {
+      --chan: var(--muted);
+   }
+
+   /* ── StatusPill */
+   .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5ch;
+      padding: 0.15em 0.65em;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: var(--step--2);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      line-height: 1.5;
+   }
+   .status-pill[data-status="done"] {
+      color: var(--success);
+   }
+   .status-pill[data-status="active"] {
+      color: var(--camera);
+   }
+   .status-pill[data-status="planned"] {
+      color: var(--muted);
+      border-style: dashed;
+   }
+   .status-pill__dot {
+      width: 0.5em;
+      height: 0.5em;
+      border-radius: 50%;
+      background: currentColor;
+   }
+   .status-pill[data-status="planned"] .status-pill__dot {
+      background: transparent;
+      box-shadow: inset 0 0 0 1px currentColor;
+   }
+   .status-pill[data-status="active"] .status-pill__dot {
+      animation: pill-pulse 1.6s ease-in-out infinite;
+   }
+   @keyframes pill-pulse {
+      0%,
+      100% {
+         box-shadow: 0 0 0 0 color-mix(in oklch, currentColor 60%, transparent);
+      }
+      50% {
+         box-shadow: 0 0 0 0.35em transparent;
+      }
+   }
+
+   /* ── BoundingBox */
+   .bbox {
+      --bbox-c: var(--chan, var(--camera));
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border: 1px solid color-mix(in oklch, var(--bbox-c) 55%, transparent);
+      box-shadow:
+         0 0 0 1px color-mix(in oklch, var(--bbox-c) 15%, transparent),
+         0 0 24px color-mix(in oklch, var(--bbox-c) 18%, transparent);
+   }
+   .bbox::before,
+   .bbox::after {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      --l: clamp(10px, 18%, 22px);
+      background:
+         linear-gradient(var(--bbox-c), var(--bbox-c)) top left / var(--l) 2px,
+         linear-gradient(var(--bbox-c), var(--bbox-c)) top left / 2px var(--l),
+         linear-gradient(var(--bbox-c), var(--bbox-c)) top right / var(--l) 2px,
+         linear-gradient(var(--bbox-c), var(--bbox-c)) top right / 2px var(--l),
+         linear-gradient(var(--bbox-c), var(--bbox-c)) bottom left / var(--l) 2px,
+         linear-gradient(var(--bbox-c), var(--bbox-c)) bottom left / 2px var(--l),
+         linear-gradient(var(--bbox-c), var(--bbox-c)) bottom right / var(--l) 2px,
+         linear-gradient(var(--bbox-c), var(--bbox-c)) bottom right / 2px var(--l);
+      background-repeat: no-repeat;
+   }
+   .bbox::after {
+      display: none;
+   }
+   .bbox__label {
+      position: absolute;
+      left: -1px;
+      bottom: 100%;
+      margin-bottom: 2px;
+      padding: 0.1em 0.5em;
+      background: var(--bbox-c);
+      color: var(--on-accent);
+      font-family: var(--font-mono);
+      font-size: var(--step--2);
+      line-height: 1.5;
+      white-space: nowrap;
+   }
+   .bbox[data-animate] {
+      animation: bbox-lock 0.55s var(--ease-out) both;
+   }
+   .bbox[data-animate] .bbox__label {
+      animation: bbox-label 0.55s steps(6, end) both;
+   }
+   @keyframes bbox-lock {
+      0% {
+         transform: scale(1.12);
+         opacity: 0;
+      }
+      60% {
+         transform: scale(0.98);
+         opacity: 1;
+      }
+      100% {
+         transform: scale(1);
+         opacity: 1;
+      }
+   }
+   @keyframes bbox-label {
+      from {
+         clip-path: inset(0 100% 0 0);
+      }
+      to {
+         clip-path: inset(0 0 0 0);
+      }
+   }
+
+   /* ── Buttons */
+   .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6ch;
+      min-height: 2.75rem;
+      padding: 0.55rem 1.1rem;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      font-family: var(--font-mono);
+      font-size: var(--step--1);
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+      cursor: pointer;
+      transition:
+         background-color 0.2s,
+         border-color 0.2s,
+         color 0.2s,
+         box-shadow 0.2s;
+   }
+   .btn:focus-visible {
+      outline: none;
+      box-shadow: var(--glow);
+   }
+   .btn-primary {
+      background: var(--camera);
+      color: var(--on-accent);
+   }
+   .btn-primary:hover {
+      background: color-mix(in oklch, var(--camera) 85%, var(--ink));
+   }
+   .btn-ghost {
+      border-color: var(--line-strong);
+      color: var(--ink);
+   }
+   .btn-ghost:hover {
+      border-color: var(--camera);
+      color: var(--camera);
+   }
+   .btn[disabled],
+   .btn[aria-disabled="true"] {
+      opacity: 0.55;
+      cursor: not-allowed;
+   }
+
+   /* ── Section scaffolding */
+   .section {
+      padding-block: var(--space-section);
+      padding-inline: var(--gutter);
+      border-top: 1px solid var(--line);
+   }
+   .section__inner {
+      width: 100%;
+      max-width: var(--content);
+      margin-inline: auto;
+   }
+   .section__eyebrow {
+      margin-bottom: var(--space-s);
+   }
+   .section__title {
+      font-size: var(--step-3);
+      font-weight: 600;
+      max-width: 24ch;
+   }
+   .section__lead {
+      margin-top: var(--space-s);
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: var(--step-1);
+      line-height: 1.5;
+   }
+
+   .mono-caps {
+      font-family: var(--font-mono);
+      font-size: var(--step--2);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+   }
+
+   .tbc {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      color: var(--muted);
+      border-bottom: 1px dashed var(--line-strong);
+   }
+
+   .link {
+      color: var(--camera);
+      text-decoration: underline;
+      text-decoration-color: color-mix(in oklch, var(--camera) 40%, transparent);
+      text-underline-offset: 0.2em;
+   }
+   .link:hover {
+      text-decoration-color: currentColor;
+   }
+
+   .skip-link {
+      position: absolute;
+      left: var(--space-s);
+      top: -100px;
+      z-index: 100;
+      padding: var(--space-2xs) var(--space-s);
+      background: var(--camera);
+      color: var(--on-accent);
+      font-family: var(--font-mono);
+      font-size: var(--step--1);
+   }
+   .skip-link:focus {
+      top: var(--space-s);
+   }
+}

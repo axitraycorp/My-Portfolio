@@ -1,26 +1,109 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/hud.css";
+@import "../styles/effects.css";
+@import "../styles/assistant.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* `dark:` follows the resolved theme attribute, not the OS setting */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+   --color-background: var(--background);
+   --color-surface: var(--surface);
+   --color-surface-raised: var(--surface-raised);
+   --color-ink: var(--ink);
+   --color-muted: var(--muted);
+   --color-line: var(--line);
+   --color-line-strong: var(--line-strong);
+   --color-radar: var(--radar);
+   --color-camera: var(--camera);
+   --color-fused: var(--fused);
+   --color-success: var(--success);
+   --color-warning: var(--warning);
+   --color-on-accent: var(--on-accent);
+
+   --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+   --text-caption: var(--step--2);
+   --text-small: var(--step--1);
+   --text-body: var(--step-0);
+   --text-lead: var(--step-1);
+   --text-h3: var(--step-2);
+   --text-h2: var(--step-3);
+   --text-h1: var(--step-4);
+   --text-display: var(--step-5);
+
+   --spacing-3xs: var(--space-3xs);
+   --spacing-2xs: var(--space-2xs);
+   --spacing-xs: var(--space-xs);
+   --spacing-s: var(--space-s);
+   --spacing-m: var(--space-m);
+   --spacing-l: var(--space-l);
+   --spacing-xl: var(--space-xl);
+   --spacing-2xl: var(--space-2xl);
+   --spacing-section: var(--space-section);
+   --spacing-gutter: var(--gutter);
+
+   --container-content: var(--content);
+   --radius-hud: var(--radius);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@layer base {
+   html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 4.5rem;
+      -webkit-text-size-adjust: 100%;
+   }
+
+   body {
+      background: var(--background);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: var(--step-0);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+   }
+
+   h1,
+   h2,
+   h3,
+   h4 {
+      font-family: var(--font-display);
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+   }
+
+   p {
+      text-wrap: pretty;
+   }
+
+   ::selection {
+      background: color-mix(in oklch, var(--camera) 35%, transparent);
+   }
+
+   :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 3px;
+      border-radius: 2px;
+   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+   html {
+      scroll-behavior: auto;
+   }
+
+   *,
+   *::before,
+   *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      animation-delay: 0ms !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+   }
 }

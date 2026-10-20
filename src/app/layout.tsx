@@ -1,50 +1,106 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { AssistantRoot } from "@/components/assistant/AssistantRoot";
+import { ViewTransitionListener } from "@/lib/view-transition";
+import { headScript } from "@/lib/theme";
 import { siteConfig } from "@/config/site";
+import { education, profile, skillGroups } from "@/content/profile";
+import { publicText } from "@/lib/content";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const display = Space_Grotesk({
+   variable: "--font-space-grotesk",
+   subsets: ["latin"],
+   display: "swap",
 });
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const body = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
+const mono = JetBrains_Mono({
+   variable: "--font-jetbrains-mono",
+   subsets: ["latin"],
+   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: siteConfig.title,
-  description: siteConfig.description,
-  metadataBase: new URL(siteConfig.url),
-  openGraph: {
-    title: siteConfig.title,
-    description: "Explore projects, architecture, and deep technical insights from Hagon.",
-    url: siteConfig.url,
-    siteName: "Hagon Portfolio",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Hagon | Full-Stack Developer",
-    description: "Building the future of web, mobile, cloud, and AI.",
-  },
+   metadataBase: new URL(siteConfig.url),
+   title: { default: siteConfig.title, template: `%s | ${profile.name}` },
+   description: siteConfig.description,
+   applicationName: `${profile.name} — portfolio`,
+   authors: [{ name: profile.name, url: siteConfig.url }],
+   alternates: { canonical: "/" },
+   openGraph: {
+      type: "website",
+      url: "/",
+      siteName: `${profile.name} — ${profile.title}`,
+      title: siteConfig.title,
+      description: siteConfig.description,
+   },
+   twitter: {
+      card: "summary_large_image",
+      title: siteConfig.title,
+      description: siteConfig.description,
+   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+export const viewport: Viewport = {
+   themeColor: [
+      { media: "(prefers-color-scheme: dark)", color: "#0e1117" },
+      { media: "(prefers-color-scheme: light)", color: "#fbfbfd" },
+   ],
+   viewportFit: "cover",
+};
+
+function personJsonLd() {
+   const alumni = education
+      .map((e) => publicText(e.institution))
+      .filter((name): name is string => name !== null)
+      .map((name) => ({ "@type": "CollegeOrUniversity", name }));
+   return {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: profile.name,
+      jobTitle: profile.title,
+      description: profile.thesis,
+      url: siteConfig.url,
+      email: `mailto:${profile.email}`,
+      sameAs: [profile.links.github, profile.links.linkedin],
+      knowsAbout: skillGroups.flatMap((g) => g.skills),
+      ...(alumni.length > 0 && { alumniOf: alumni }),
+      ...(publicText(profile.location) && {
+         address: { "@type": "PostalAddress", addressLocality: publicText(profile.location) },
+      }),
+   };
+}
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+   return (
+      <html
+         lang="en"
+         suppressHydrationWarning
+         className={`${display.variable} ${body.variable} ${mono.variable}`}
       >
-        <Navbar />
-        <main className="min-h-screen max-w-5xl mx-auto p-6">{children}</main>
-      </body>
-    </html>
-  );
+         <head>
+            <script dangerouslySetInnerHTML={{ __html: headScript }} />
+            <script
+               type="application/ld+json"
+               dangerouslySetInnerHTML={{
+                  __html: JSON.stringify(personJsonLd()).replace(/</g, "\\u003c"),
+               }}
+            />
+         </head>
+         <body>
+            <a href="#main" className="skip-link">
+               Skip to content
+            </a>
+            <Navbar />
+            <main id="main" tabIndex={-1} className="outline-none">
+               {children}
+            </main>
+            <Footer />
+            <ViewTransitionListener />
+            <AssistantRoot />
+         </body>
+      </html>
+   );
 }

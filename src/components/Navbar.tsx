@@ -1,82 +1,88 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import clsx from "clsx";
-import { useState } from "react";
-import { Menu, X } from "lucide-react"; // Icon library
+import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
+import { profile, sections } from "@/content/profile";
+import { ThemeToggle } from "@/components/hud/ThemeToggle";
 
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/projects", label: "Projects" },
-  { href: "/skills", label: "Skills" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-];
+const links = sections.filter((s) => s.id !== "hero");
 
 export default function Navbar() {
-  const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+   const [isOpen, setIsOpen] = useState(false);
 
-  return (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#111]/80 backdrop-blur border-b border-neutral-200 dark:border-neutral-800">
-      <nav className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="font-bold text-lg hover:opacity-80 transition">
-          Hagon.dev
-        </Link>
+   useEffect(() => {
+      if (!isOpen) return;
+      const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsOpen(false);
+      window.addEventListener("keydown", onKey);
+      return () => window.removeEventListener("keydown", onKey);
+   }, [isOpen]);
 
-        {/* Desktop menu */}
-        <ul className="hidden sm:flex gap-6 text-sm font-medium items-center">
-          {links.map(({ href, label }) => (
-            <li key={href}>
-              <Link
-                href={href}
-                className={clsx(
-                  "px-2 py-1 rounded transition",
-                  pathname === href
-                    ? "bg-gray-200 dark:bg-neutral-800 text-black dark:text-white"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-700"
-                )}
-              >
-                {label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+   return (
+      <header className="sticky top-0 z-40 border-b border-line bg-background/85 backdrop-blur supports-[not(backdrop-filter:blur(1px))]:bg-background">
+         <nav
+            aria-label="Main"
+            className="mx-auto flex h-16 max-w-content items-center justify-between gap-s px-gutter"
+         >
+            <Link
+               href="/"
+               className="group flex items-baseline gap-2xs font-display text-lead font-semibold tracking-tight"
+            >
+               {profile.name}
+               <span className="font-mono text-caption font-normal text-camera transition-colors group-hover:text-radar">
+                  /unit-7
+               </span>
+            </Link>
 
-        {/* Mobile menu toggle */}
-        <button
-          className="sm:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-neutral-700 transition"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
-        >
-          {isOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </nav>
+            <ul className="hidden items-center gap-3xs md:flex">
+               {links.map(({ id, label }) => (
+                  <li key={id}>
+                     <Link
+                        href={`/#${id}`}
+                        className="rounded-hud px-xs py-2xs font-mono text-small text-muted transition-colors hover:text-ink"
+                     >
+                        {label}
+                     </Link>
+                  </li>
+               ))}
+            </ul>
 
-      {/* Mobile menu */}
-      {isOpen && (
-        <div className="sm:hidden px-4 pb-3">
-          <ul className="flex flex-col gap-2 text-sm font-medium">
-            {links.map(({ href, label }) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  className={clsx(
-                    "block px-4 py-2 rounded transition",
-                    pathname === href
-                      ? "bg-gray-200 dark:bg-neutral-800 text-black dark:text-white"
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-700"
+            <div className="flex items-center gap-2xs">
+               <ThemeToggle />
+               <button
+                  type="button"
+                  className="inline-flex size-10 items-center justify-center rounded-hud border border-line md:hidden"
+                  onClick={() => setIsOpen((v) => !v)}
+                  aria-expanded={isOpen}
+                  aria-controls="mobile-menu"
+                  aria-label={isOpen ? "Close menu" : "Open menu"}
+               >
+                  {isOpen ? (
+                     <X className="size-5" aria-hidden="true" />
+                  ) : (
+                     <Menu className="size-5" aria-hidden="true" />
                   )}
-                  onClick={() => setIsOpen(false)} // Close menu on click
-                >
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </header>
-  );
+               </button>
+            </div>
+         </nav>
+
+         {isOpen && (
+            <div id="mobile-menu" className="border-t border-line px-gutter pb-s md:hidden">
+               <ul className="flex flex-col py-2xs">
+                  {links.map(({ id, label }) => (
+                     <li key={id}>
+                        <Link
+                           href={`/#${id}`}
+                           className="block py-xs font-mono text-body text-muted hover:text-ink"
+                           onClick={() => setIsOpen(false)}
+                        >
+                           {label}
+                        </Link>
+                     </li>
+                  ))}
+               </ul>
+            </div>
+         )}
+      </header>
+   );
 }

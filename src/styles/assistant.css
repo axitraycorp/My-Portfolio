@@ -1,0 +1,349 @@
+/* Unit-7 assistant: launcher, panel, spotlight. */
+
+.assistant-launcher {
+   position: fixed;
+   right: max(1rem, env(safe-area-inset-right));
+   bottom: max(1rem, env(safe-area-inset-bottom));
+   z-index: 60;
+   display: grid;
+   place-items: center;
+   width: 3.5rem;
+   height: 3.5rem;
+   border: 1px solid var(--line-strong);
+   border-radius: 50%;
+   background: var(--surface);
+   cursor: pointer;
+   box-shadow: 0 6px 24px color-mix(in oklch, var(--background) 60%, transparent);
+   transition:
+      border-color 0.2s,
+      transform 0.2s var(--ease-out);
+}
+.assistant-launcher:hover {
+   border-color: var(--fused);
+   transform: scale(1.05);
+}
+.assistant-launcher:focus-visible {
+   outline: none;
+   box-shadow: var(--glow);
+}
+.assistant-launcher__eye {
+   display: grid;
+   place-items: center;
+   width: 1.6rem;
+   height: 1.6rem;
+   border-radius: 50%;
+   background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--camera) 35%, var(--background)) 0 55%,
+      var(--background) 56%
+   );
+   box-shadow: inset 0 0 0 1.5px var(--camera);
+}
+.assistant-launcher__pupil {
+   width: 0.5rem;
+   height: 0.5rem;
+   border-radius: 50%;
+   background: var(--camera);
+   box-shadow: 0 0 10px var(--camera);
+}
+.assistant-launcher__ring {
+   position: absolute;
+   inset: -1px;
+   border-radius: 50%;
+   border: 1.5px solid var(--radar);
+   opacity: 0;
+   animation: radar-ring 2.6s ease-out infinite;
+}
+@keyframes radar-ring {
+   0% {
+      transform: scale(0.9);
+      opacity: 0.8;
+   }
+   100% {
+      transform: scale(1.6);
+      opacity: 0;
+   }
+}
+.assistant-launcher[data-open] .assistant-launcher__ring {
+   animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+   .assistant-launcher__ring {
+      animation: none;
+      opacity: 0.6;
+      transform: none;
+   }
+}
+
+.assistant-panel {
+   --hud-c: var(--fused);
+   position: fixed;
+   z-index: 61;
+   right: max(1rem, env(safe-area-inset-right));
+   bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 4.25rem);
+   display: flex;
+   flex-direction: column;
+   width: min(25rem, calc(100vw - 2rem));
+   max-height: min(36rem, calc(100svh - 7rem));
+   background-color: var(--surface);
+   border: 1px solid var(--line);
+   border-radius: var(--radius);
+   box-shadow: 0 18px 50px color-mix(in oklch, var(--background) 70%, transparent);
+   overflow: hidden;
+}
+.assistant-panel[hidden] {
+   display: none;
+}
+@media (max-width: 639px) {
+   .assistant-panel {
+      left: max(0.5rem, env(safe-area-inset-left));
+      right: max(0.5rem, env(safe-area-inset-right));
+      bottom: max(0.5rem, env(safe-area-inset-bottom));
+      width: auto;
+      max-height: min(70svh, 34rem);
+   }
+   /* The panel's own close button replaces the launcher while open on phones */
+   .assistant-launcher[data-open] {
+      display: none;
+   }
+}
+
+.assistant-panel__header {
+   display: flex;
+   align-items: center;
+   gap: var(--space-xs);
+   padding: var(--space-s);
+   border-bottom: 1px solid var(--line);
+}
+.assistant-panel__header > :first-child {
+   flex: 1;
+}
+
+.assistant-mode {
+   display: inline-flex;
+   padding: 2px;
+   border: 1px solid var(--line);
+   border-radius: var(--radius);
+}
+.assistant-mode button {
+   min-height: 2rem;
+   padding: 0 0.7rem;
+   border-radius: calc(var(--radius) - 2px);
+   font-family: var(--font-mono);
+   font-size: var(--step--1);
+   color: var(--muted);
+   cursor: pointer;
+}
+.assistant-mode button[aria-pressed="true"] {
+   background: var(--fused);
+   color: var(--on-accent);
+}
+.assistant-mode button:disabled {
+   opacity: 0.5;
+   cursor: not-allowed;
+}
+
+.assistant-icon-btn {
+   display: inline-grid;
+   place-items: center;
+   width: 2.25rem;
+   height: 2.25rem;
+   border-radius: var(--radius);
+   color: var(--muted);
+   cursor: pointer;
+}
+.assistant-icon-btn:hover {
+   color: var(--ink);
+   background: var(--surface-raised);
+}
+
+.assistant-note {
+   padding: 0.35rem var(--space-s);
+   background: color-mix(in oklch, var(--radar) 14%, transparent);
+   color: var(--radar);
+   font-family: var(--font-mono);
+   font-size: var(--step--2);
+   text-transform: uppercase;
+   letter-spacing: 0.08em;
+}
+
+.assistant-log {
+   flex: 1;
+   display: flex;
+   flex-direction: column;
+   gap: var(--space-xs);
+   min-height: 8rem;
+   padding: var(--space-s);
+   overflow-y: auto;
+   overscroll-behavior: contain;
+}
+.assistant-msg {
+   max-width: 92%;
+   padding: 0.55rem 0.8rem;
+   border-radius: var(--radius);
+   font-size: var(--step--1);
+   line-height: 1.55;
+   white-space: pre-wrap;
+}
+.assistant-msg[data-role="assistant"] {
+   align-self: flex-start;
+   background: var(--surface-raised);
+   border-left: 2px solid var(--fused);
+}
+.assistant-msg[data-role="user"] {
+   align-self: flex-end;
+   background: color-mix(in oklch, var(--camera) 16%, var(--surface));
+}
+
+/* Typing indicator: a scanning bar */
+.assistant-scan {
+   position: relative;
+   width: 5rem;
+   height: 0.5rem;
+   border: 1px solid var(--line);
+   border-radius: 2px;
+   overflow: hidden;
+}
+.assistant-scan span {
+   position: absolute;
+   inset: 0 auto 0 0;
+   width: 35%;
+   background: linear-gradient(90deg, transparent, var(--fused), transparent);
+   animation: scan-bar 1s ease-in-out infinite alternate;
+}
+@keyframes scan-bar {
+   from {
+      transform: translateX(-30%);
+   }
+   to {
+      transform: translateX(220%);
+   }
+}
+@media (prefers-reduced-motion: reduce) {
+   .assistant-scan span {
+      animation: none;
+      width: 100%;
+      opacity: 0.4;
+   }
+}
+
+.assistant-chips {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 0.4rem;
+   padding: 0 var(--space-s) var(--space-xs);
+}
+.assistant-chips button {
+   min-height: 2rem;
+   padding: 0.25rem 0.65rem;
+   border: 1px solid var(--line-strong);
+   border-radius: 999px;
+   font-size: var(--step--1);
+   text-align: left;
+   color: var(--ink);
+   cursor: pointer;
+   transition:
+      border-color 0.2s,
+      color 0.2s;
+}
+.assistant-chips button:hover {
+   border-color: var(--fused);
+   color: var(--fused);
+}
+
+.assistant-form {
+   display: grid;
+   gap: 0.4rem;
+   padding: var(--space-s);
+   border-top: 1px solid var(--line);
+}
+.assistant-form textarea {
+   width: 100%;
+   resize: none;
+   padding: 0.5rem 0.65rem;
+   border: 1px solid var(--line);
+   border-radius: var(--radius);
+   background: var(--background);
+   color: var(--ink);
+   font-size: var(--step--1);
+}
+.assistant-form textarea:focus {
+   outline: none;
+   border-color: var(--fused);
+   box-shadow: var(--glow);
+}
+.assistant-form__row {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+}
+
+.assistant-tour {
+   display: grid;
+   gap: var(--space-s);
+   padding: var(--space-s);
+   overflow-y: auto;
+}
+.assistant-tour .assistant-msg {
+   max-width: none;
+}
+.assistant-tour__controls {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 0.5rem;
+}
+.assistant-progress {
+   height: 2px;
+   background: var(--line);
+}
+.assistant-progress span {
+   display: block;
+   height: 100%;
+   background: var(--fused);
+   transition: width 0.3s var(--ease-out);
+}
+
+/* Spotlight: dims everything except the highlighted element */
+.spotlight {
+   position: fixed;
+   inset: 0;
+   z-index: 55;
+   pointer-events: none;
+}
+.spotlight__hole {
+   position: fixed;
+   border-radius: var(--radius);
+   box-shadow: 0 0 0 200vmax color-mix(in oklch, var(--background) 62%, transparent);
+   transition:
+      top 0.35s var(--ease-out),
+      left 0.35s var(--ease-out),
+      width 0.35s var(--ease-out),
+      height 0.35s var(--ease-out);
+   animation: spotlight-in 0.35s ease-out both;
+}
+@keyframes spotlight-in {
+   from {
+      opacity: 0;
+   }
+   to {
+      opacity: 1;
+   }
+}
+.spotlight__hole .bbox {
+   inset: 0;
+}
+.spotlight__hole .bbox__label {
+   font-size: var(--step--1);
+}
+@media (prefers-reduced-motion: reduce) {
+   .spotlight__hole {
+      transition: none;
+      animation: none;
+   }
+   .spotlight__hole .bbox {
+      animation: none;
+   }
+   .spotlight__hole .bbox__label {
+      animation: none;
+   }
+}

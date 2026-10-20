@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 const inputClass =
-   "w-full border border-gray-300 dark:border-neutral-700 bg-transparent rounded-lg p-2 mt-1";
+   "mt-3xs w-full rounded-hud border border-line bg-background px-xs py-2xs text-ink transition-colors placeholder:text-muted focus:border-camera focus:outline-none focus-visible:shadow-[var(--glow)]";
 
 export function ContactForm() {
    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -45,23 +45,38 @@ export function ContactForm() {
    }
 
    return (
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-s">
          <div>
-            <label htmlFor="name" className="block font-medium">
+            <label htmlFor="name" className="mono-caps">
                Name
             </label>
-            <input required minLength={2} name="name" id="name" type="text" className={inputClass} />
+            <input
+               required
+               minLength={2}
+               name="name"
+               id="name"
+               type="text"
+               autoComplete="name"
+               className={inputClass}
+            />
          </div>
 
          <div>
-            <label htmlFor="email" className="block font-medium">
+            <label htmlFor="email" className="mono-caps">
                Email
             </label>
-            <input required name="email" id="email" type="email" className={inputClass} />
+            <input
+               required
+               name="email"
+               id="email"
+               type="email"
+               autoComplete="email"
+               className={inputClass}
+            />
          </div>
 
          <div>
-            <label htmlFor="message" className="block font-medium">
+            <label htmlFor="message" className="mono-caps">
                Message
             </label>
             <textarea
@@ -76,16 +91,20 @@ export function ContactForm() {
 
          <button
             type="submit"
-            className="bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition disabled:opacity-60"
+            className="btn btn-primary self-start"
             disabled={status === "loading"}
          >
-            {status === "loading" ? "Sending..." : "Send Message"}
+            {status === "loading" ? "Transmitting..." : "Send message"}
          </button>
 
-         {status === "success" && (
-            <p className="text-green-600 font-medium">Thanks! Your message has been sent.</p>
-         )}
-         {status === "error" && <p className="text-red-600 font-medium">Error: {error}</p>}
+         <div role="status" aria-live="polite">
+            {status === "success" && (
+               <p className="font-mono text-small text-success">Message received. Thanks!</p>
+            )}
+            {status === "error" && (
+               <p className="font-mono text-small text-warning">Error: {error}</p>
+            )}
+         </div>
       </form>
    );
 }
