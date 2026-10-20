@@ -8,8 +8,9 @@ services:
     rootDir: backend
     # --include=dev: nest CLI and prisma are devDependencies needed to build
     buildCommand: npm ci --include=dev && npx prisma generate && npm run build
-    # Free plan has no pre-deploy step, so migrations run on start
-    startCommand: npx prisma migrate deploy && npm run start:prod
+    # Migrations are applied separately: `npx prisma migrate deploy` with the
+    # production DATABASE_URL (free plan has no pre-deploy step)
+    startCommand: npm run start:prod
     healthCheckPath: /
     envVars:
       - key: NODE_ENV
