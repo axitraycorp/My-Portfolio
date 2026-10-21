@@ -17,8 +17,8 @@ export type SectionId =
 
 export type Status = "done" | "active" | "planned";
 
-/** Sensor channel; drives colour (camera = cyan, radar = amber, fused = violet). */
-export type Channel = "camera" | "radar" | "fused" | "neutral";
+/** Sensor channel; drives colour (camera = cyan, LiDAR = amber, fused = violet). */
+export type Channel = "camera" | "lidar" | "fused" | "neutral";
 
 export interface Profile {
    /** Preferred name, shown everywhere on the site. */
@@ -103,7 +103,7 @@ export interface ProjectMedia {
 }
 
 export interface Spec {
-   id: "compute" | "arm" | "camera" | "radar" | "middleware" | "perception";
+   id: "compute" | "base" | "arm" | "camera" | "lidar" | "middleware";
    label: string;
    value: string;
    channel: Channel;
@@ -190,18 +190,18 @@ export const recruiter: RecruiterSummary = {
       "Machine Learning Engineer",
       "Automation Programmer",
    ],
-   availability: "TODO: e.g. Available now / notice period",
+   availability: "Available now",
    workRights:
       "Full work rights in Australia — Temporary Graduate visa (subclass 485), valid until 31 Aug 2029",
    openTo: ["Full-time", "Relocation anywhere for the right opportunity"],
    highlights: [
       "Master of Data Science (2024)",
       "Hotel Manager: lifted Rosehill Hotel's gaming ranking (AHA & MAX) from Sydney's top 20–30 to the top 10",
-      "Building a camera–radar perception arm on an NVIDIA Jetson, in public",
+      "Building a Jetson mobile manipulator in public: depth camera + LiDAR, SLAM, MoveIt 2",
       "Built this site end to end: Next.js, NestJS, PostgreSQL and a Claude-powered AI guide",
    ],
    summary:
-      "Robotics, AI and web developer with a Master of Data Science and two years managing 24/7 hotel operations in Sydney — including lifting Rosehill Hotel's gaming ranking on the AHA and MAX systems from the top 20–30 to the top 10. Currently building a camera–radar perception arm on an NVIDIA Jetson Orin Nano with ROS 2, TensorRT and MoveIt 2, documented as an open build log with measured results. Also builds full-stack web applications — this portfolio is a Next.js and NestJS app with a PostgreSQL backend and a Claude-powered AI guide. Brings the operational discipline of hospitality — reliability, calm incident handling, clear communication — to engineering work.",
+      "Robotics, AI and web developer with a Master of Data Science and two years managing 24/7 hotel operations in Sydney — including lifting Rosehill Hotel's gaming ranking on the AHA and MAX systems from the top 20–30 to the top 10. Currently building a mobile manipulator on an NVIDIA Jetson Orin Nano — depth camera and LiDAR fusion, SLAM navigation and MoveIt 2 grasping with ROS 2 and TensorRT — documented as an open build log with measured results. Also builds full-stack web applications — this portfolio is a Next.js and NestJS app with a PostgreSQL backend and a Claude-powered AI guide. Brings the operational discipline of hospitality — reliability, calm incident handling, clear communication — to engineering work.",
 };
 
 export const profile: Profile = {
@@ -210,7 +210,7 @@ export const profile: Profile = {
    title: "Robotics & Edge AI Engineer",
    tagline: "From running a hotel to building robots that see.",
    thesis:
-      "I build robot perception that runs on the edge — camera and radar, fused on a Jetson, driving a real arm.",
+      "I build robots that see and act on the edge — a depth camera and LiDAR fused on a Jetson, on a robot that maps, drives and grasps.",
    location: "Sydney, NSW, Australia",
    email: "axitray@gmail.com",
    links: {
@@ -245,7 +245,7 @@ export const experience: Experience[] = [
       achievements: [
          "Rosehill Hotel: lifted the venue's gaming ranking on the AHA and MAX systems from the top 20–30 to the top 10 in Sydney",
          "The Vauxhall Inn: now applying the same approach to improve the venue's gaming rankings",
-         "TODO: team size and departments led (e.g. front office, housekeeping, F&B)",
+         "Led teams of 14–20 staff at each venue",
          "TODO: a process or system you introduced (e.g. new PMS workflow, SOPs)",
       ],
    },
@@ -255,12 +255,12 @@ export const skillGroups: SkillGroup[] = [
    {
       id: "robotics",
       title: "Robotics",
-      skills: ["ROS 2", "MoveIt 2", "URDF & TF2", "Hand–eye calibration"],
+      skills: ["ROS 2", "SLAM & Nav2", "MoveIt 2", "URDF & TF2", "Hand–eye calibration"],
    },
    {
       id: "perception",
       title: "Perception & edge AI",
-      skills: ["YOLO", "TensorRT", "ONNX", "OpenCV", "Camera–radar fusion", "NVIDIA Jetson"],
+      skills: ["YOLO", "TensorRT", "ONNX", "OpenCV", "Camera–LiDAR fusion", "NVIDIA Jetson"],
    },
    {
       id: "data",
@@ -328,25 +328,27 @@ export const skillTransfers: SkillTransfer[] = [
 
 export const projects: Project[] = [
    {
-      slug: "perception-arm",
-      title: "Camera–Radar Perception Arm",
+      slug: "mobile-manipulator",
+      title: "Jetson Mobile Manipulator",
       summary:
-         "A robot arm that finds and grasps objects using a camera and an mmWave radar fused on an NVIDIA Jetson Orin Nano.",
+         "A mecanum-wheeled robot with a vision-guided arm that maps a room, drives to objects and picks them up — a depth camera and TOF LiDAR fused on an NVIDIA Jetson Orin Nano.",
       problem:
-         "Cameras are great at what an object is but weak at exactly where it is, and they fail in glare or low light. mmWave radar measures range and velocity reliably but cannot tell a cup from a can. A grasping robot needs both, running in real time on a small edge computer.",
+         "To fetch an object, a robot has to know where it is, what it is looking at, and exactly where that object sits in 3D — then move its base and its arm to reach it. A depth camera recognises objects but loses accuracy with distance and glare; a LiDAR measures geometry precisely but cannot tell a cup from a can. Doing all of this on board, in real time, needs GPU-accelerated perception on a small edge computer.",
       approach: [
-         "Bring up the hardware on ROS 2: Jetson Orin Nano, arm driver, camera and mmWave radar publishing on standard topics with a clean TF tree.",
+         "Upgrade the kit from its Raspberry Pi 5 to an NVIDIA Jetson Orin Nano and bring everything up on ROS 2: base and arm via the RRC Lite controller, wheel odometry and IMU, depth camera and TOF LiDAR, with a clean URDF and TF tree.",
          "Export a YOLO detector to TensorRT and benchmark it against the PyTorch baseline on the Jetson.",
-         "Integrate the radar as a ROS 2 point cloud and filter it by range and velocity.",
-         "Fuse camera detections with radar points: project radar into the image, associate points with boxes, and track fused objects over time.",
-         "Calibrate the camera to the arm (hand–eye) and plan grasps with MoveIt 2 from fused 3D object positions.",
-         "Run an end-to-end pick-and-place demo and measure grasp success over 50 trials.",
+         "Map the room with LiDAR SLAM, localise with AMCL and navigate to goals with Nav2 on the mecanum base.",
+         "Fuse camera detections with depth and LiDAR to place each object in 3D in the map frame, and track it over time.",
+         "Calibrate the wrist camera to the arm (hand–eye) and plan grasps with MoveIt 2 from the fused 3D positions.",
+         "Run end to end — find an object, drive to it, pick it up and deliver it — and measure success over 50 trials.",
       ],
       stack: [
          "ROS 2",
          "NVIDIA Jetson Orin Nano",
          "TensorRT",
          "YOLO",
+         "SLAM Toolbox",
+         "Nav2",
          "MoveIt 2",
          "OpenCV",
          "Python",
@@ -357,7 +359,7 @@ export const projects: Project[] = [
       media: {
          image: null,
          video: null, // TODO: add demo video URL after milestone 6
-         alt: "Robot arm with a camera and mmWave radar mounted at its base",
+         alt: "Mecanum-wheeled mobile robot with a servo arm, a wrist-mounted depth camera and a TOF LiDAR",
       },
       repoUrl: null, // TODO: public repo URL
       demoUrl: null,
@@ -365,27 +367,37 @@ export const projects: Project[] = [
          {
             id: "compute",
             label: "Compute",
-            value: "NVIDIA Jetson Orin Nano (TODO: 4 GB or 8 GB)",
+            value: "NVIDIA Jetson Orin Nano (TODO: 4 GB or 8 GB) — upgraded from the kit's Raspberry Pi 5",
+            channel: "neutral",
+         },
+         {
+            id: "base",
+            label: "Mobile base",
+            value: "Mecanum chassis, 212 × 174 mm · 4 encoder geared motors, 65 mm wheels · 7.4 V LiPo",
             channel: "neutral",
          },
          {
             id: "arm",
             label: "Arm",
-            value: "TODO: arm model and degrees of freedom",
+            value: "Servo arm with gripper on a rotating turret · links 74 / 74 / 140 mm",
             channel: "neutral",
          },
-         { id: "camera", label: "Camera", value: "TODO: camera model", channel: "camera" },
-         { id: "radar", label: "Radar", value: "TODO: mmWave radar model", channel: "radar" },
+         {
+            id: "camera",
+            label: "Camera",
+            value: "3D depth camera (RGB + depth), wrist-mounted",
+            channel: "camera",
+         },
+         {
+            id: "lidar",
+            label: "LiDAR",
+            value: "TOF LiDAR on the chassis, for SLAM and obstacle avoidance",
+            channel: "lidar",
+         },
          {
             id: "middleware",
-            label: "Middleware",
-            value: "ROS 2 (TODO: distro)",
-            channel: "neutral",
-         },
-         {
-            id: "perception",
-            label: "Perception",
-            value: "TensorRT YOLO + camera–radar fusion",
+            label: "Software",
+            value: "ROS 2 (TODO: distro) · TensorRT · Nav2 · MoveIt 2",
             channel: "fused",
          },
       ],
@@ -393,19 +405,19 @@ export const projects: Project[] = [
          nodes: [
             {
                id: "camera",
-               label: "Camera",
+               label: "Depth camera",
                channel: "camera",
                layer: 0,
                lane: 0,
-               topic: "/camera/image_raw",
+               topic: "/camera/color/image_raw",
             },
             {
-               id: "radar",
-               label: "mmWave radar",
-               channel: "radar",
+               id: "lidar",
+               label: "TOF LiDAR",
+               channel: "lidar",
                layer: 0,
                lane: 1,
-               topic: "/radar/raw",
+               topic: "/scan",
             },
             {
                id: "detector",
@@ -416,45 +428,45 @@ export const projects: Project[] = [
                topic: "/perception/detections",
             },
             {
-               id: "pointcloud",
-               label: "Point cloud",
-               channel: "radar",
+               id: "slam",
+               label: "SLAM + AMCL",
+               channel: "lidar",
                layer: 1,
                lane: 1,
-               topic: "/radar/points",
+               topic: "/map · /amcl_pose",
             },
             {
                id: "fusion",
-               label: "Fusion + tracking",
+               label: "3D object fusion",
                channel: "fused",
                layer: 2,
                lane: 0.5,
-               topic: "/fusion/tracks",
+               topic: "/perception/objects",
             },
             {
-               id: "moveit",
-               label: "MoveIt 2",
+               id: "planning",
+               label: "Nav2 + MoveIt 2",
                channel: "neutral",
                layer: 3,
                lane: 0.5,
-               topic: "/arm/trajectory",
+               topic: "/cmd_vel · /arm/cmd",
             },
             {
-               id: "arm",
-               label: "Arm",
+               id: "robot",
+               label: "Base + arm",
                channel: "neutral",
                layer: 4,
                lane: 0.5,
-               topic: "/arm/joint_states",
+               topic: "/joint_states",
             },
          ],
          edges: [
             { from: "camera", to: "detector", channel: "camera", label: "image" },
-            { from: "radar", to: "pointcloud", channel: "radar", label: "raw" },
-            { from: "detector", to: "fusion", channel: "camera", label: "boxes" },
-            { from: "pointcloud", to: "fusion", channel: "radar", label: "points" },
-            { from: "fusion", to: "moveit", channel: "fused", label: "3D tracks" },
-            { from: "moveit", to: "arm", channel: "neutral", label: "trajectory" },
+            { from: "lidar", to: "slam", channel: "lidar", label: "scan" },
+            { from: "detector", to: "fusion", channel: "camera", label: "boxes + depth" },
+            { from: "slam", to: "fusion", channel: "lidar", label: "pose + map" },
+            { from: "fusion", to: "planning", channel: "fused", label: "3D targets" },
+            { from: "planning", to: "robot", channel: "neutral", label: "commands" },
          ],
       },
       lessons: ["TODO: lessons learned — add as milestones complete"],
@@ -483,13 +495,13 @@ export const projects: Project[] = [
          nodes: [
             { id: "guest", label: "Guest message", channel: "camera", layer: 0, lane: 0.5 },
             { id: "agent", label: "LLM agent", channel: "fused", layer: 1, lane: 0.5 },
-            { id: "tools", label: "Policy + booking tools", channel: "radar", layer: 2, lane: 0 },
+            { id: "tools", label: "Policy + booking tools", channel: "lidar", layer: 2, lane: 0 },
             { id: "human", label: "Human handoff", channel: "neutral", layer: 2, lane: 1 },
             { id: "evals", label: "Eval suite", channel: "neutral", layer: 3, lane: 0.5 },
          ],
          edges: [
             { from: "guest", to: "agent", channel: "camera" },
-            { from: "agent", to: "tools", channel: "radar", label: "tool calls" },
+            { from: "agent", to: "tools", channel: "lidar", label: "tool calls" },
             { from: "agent", to: "human", channel: "neutral", label: "escalate" },
             { from: "tools", to: "evals", channel: "fused", label: "scored" },
             { from: "human", to: "evals", channel: "neutral" },
@@ -524,7 +536,7 @@ export const projects: Project[] = [
       architecture: {
          nodes: [
             { id: "bookings", label: "Booking history", channel: "camera", layer: 0, lane: 0 },
-            { id: "calendar", label: "Events + seasonality", channel: "radar", layer: 0, lane: 1 },
+            { id: "calendar", label: "Events + seasonality", channel: "lidar", layer: 0, lane: 1 },
             { id: "forecast", label: "Occupancy forecast", channel: "fused", layer: 1, lane: 0.5 },
             { id: "pricing", label: "Rate recommender", channel: "neutral", layer: 2, lane: 0.5 },
             {
@@ -537,7 +549,7 @@ export const projects: Project[] = [
          ],
          edges: [
             { from: "bookings", to: "forecast", channel: "camera", label: "pace" },
-            { from: "calendar", to: "forecast", channel: "radar", label: "features" },
+            { from: "calendar", to: "forecast", channel: "lidar", label: "features" },
             { from: "forecast", to: "pricing", channel: "fused" },
             { from: "pricing", to: "dashboard", channel: "neutral" },
          ],
@@ -551,14 +563,15 @@ export const projects: Project[] = [
 export const milestones: Milestone[] = [
    {
       number: 1,
-      title: "Hardware bring-up",
-      description: "Every sensor and the arm talking ROS 2 on the Jetson, with a correct TF tree.",
+      title: "Jetson upgrade and bring-up",
+      description:
+         "The kit moved from its Raspberry Pi 5 to a Jetson Orin Nano, with the base, arm and every sensor talking ROS 2.",
       status: "active",
       deliverables: [
-         "Jetson Orin Nano flashed with JetPack and ROS 2",
-         "Arm driver publishing joint states and accepting trajectories",
-         "Camera and radar drivers publishing on ROS 2 topics",
-         "URDF and TF tree for arm, camera and radar mounts",
+         "Jetson Orin Nano installed in place of the Raspberry Pi 5, flashed with JetPack and ROS 2",
+         "Base and arm driven through the RRC Lite controller: wheel odometry, IMU, servo joint states",
+         "Depth camera and TOF LiDAR publishing on ROS 2 topics",
+         "URDF and TF tree for chassis, arm, camera and LiDAR",
       ],
       metrics: [],
    },
@@ -577,53 +590,55 @@ export const milestones: Milestone[] = [
    },
    {
       number: 3,
-      title: "Radar integration",
-      description: "mmWave radar as a filtered ROS 2 point cloud with measured range accuracy.",
+      title: "LiDAR mapping and navigation",
+      description:
+         "A LiDAR map of the room, localisation in it, and goal navigation on the mecanum base.",
       status: "planned",
       deliverables: [
-         "Radar driver publishing PointCloud2",
-         "Range and velocity filtering node",
-         "Range-accuracy test against measured distances",
+         "SLAM Toolbox map of the test area",
+         "AMCL localisation against the saved map",
+         "Nav2 goal navigation with obstacle avoidance",
       ],
-      metrics: ["radar-range-error"],
+      metrics: ["nav-goal-error"],
    },
    {
       number: 4,
-      title: "Camera–radar fusion",
+      title: "Camera–LiDAR object fusion",
       description:
-         "Radar points projected into the image, associated with detections and tracked over time.",
+         "Detections combined with depth and LiDAR to place each object in 3D on the map, tracked over time.",
       status: "planned",
       deliverables: [
-         "Camera–radar extrinsic calibration",
-         "Association of radar points to detection boxes",
-         "Multi-object tracker publishing fused 3D tracks",
+         "Camera–LiDAR extrinsic calibration",
+         "3D object positions from detections + depth, cross-checked with LiDAR",
+         "Object tracker publishing positions in the map frame",
       ],
-      metrics: ["fusion-match-rate"],
+      metrics: ["object-position-error"],
    },
    {
       number: 5,
       title: "Hand–eye calibration and grasping",
       description:
-         "Camera calibrated to the arm, and grasps planned with MoveIt 2 from fused positions.",
+         "Wrist camera calibrated to the arm, and grasps planned with MoveIt 2 from fused 3D positions.",
       status: "planned",
       deliverables: [
          "Hand–eye calibration procedure and result",
-         "MoveIt 2 planning scene with sensors and table",
-         "Grasp pose generation from fused tracks",
+         "MoveIt 2 planning scene for the arm on the mobile base",
+         "Grasp pose generation from fused object positions",
       ],
       metrics: ["calibration-error"],
    },
    {
       number: 6,
-      title: "End-to-end demo",
-      description: "Detect, localise, grasp and place — evaluated over 50 trials and recorded.",
+      title: "End-to-end fetch demo",
+      description:
+         "Find an object, drive to it, pick it up and deliver it — evaluated over 50 trials and recorded.",
       status: "planned",
       deliverables: [
-         "Pick-and-place pipeline from one launch file",
-         "50-trial grasp evaluation",
+         "Find–navigate–grasp–deliver pipeline from one launch file",
+         "50-trial evaluation",
          "Demo video and write-up",
       ],
-      metrics: ["grasp-success"],
+      metrics: ["task-success"],
    },
 ];
 
@@ -653,27 +668,27 @@ export const metrics: Metric[] = [
       precision: 1,
    },
    {
-      id: "radar-range-error",
-      label: "Radar range error",
+      id: "nav-goal-error",
+      label: "Navigation goal error",
       unit: "cm",
-      baselineLabel: "Raw",
+      baselineLabel: "Wheel odometry only",
       baseline: "measuring",
-      optimisedLabel: "Filtered",
+      optimisedLabel: "LiDAR SLAM + AMCL",
       optimised: "measuring",
       milestone: 3,
       higherIsBetter: false,
       precision: 1,
    },
    {
-      id: "fusion-match-rate",
-      label: "Fusion match rate",
-      unit: "%",
-      baselineLabel: "Nearest neighbour",
+      id: "object-position-error",
+      label: "3D object position error",
+      unit: "cm",
+      baselineLabel: "Depth camera only",
       baseline: "measuring",
-      optimisedLabel: "Gated + tracked",
+      optimisedLabel: "Camera + LiDAR",
       optimised: "measuring",
       milestone: 4,
-      higherIsBetter: true,
+      higherIsBetter: false,
       precision: 1,
    },
    {
@@ -689,12 +704,12 @@ export const metrics: Metric[] = [
       precision: 1,
    },
    {
-      id: "grasp-success",
-      label: "Grasp success (50 trials)",
+      id: "task-success",
+      label: "Fetch success (50 trials)",
       unit: "%",
-      baselineLabel: "Camera only",
+      baselineLabel: "Depth camera only",
       baseline: "measuring",
-      optimisedLabel: "Camera + radar",
+      optimisedLabel: "Camera + LiDAR",
       optimised: "measuring",
       milestone: 6,
       higherIsBetter: true,
@@ -714,14 +729,14 @@ export const tourSteps: TourStep[] = [
       sectionId: "robot",
       title: "The robot",
       narration:
-         "This is my body. A Jetson Orin Nano for a brain, an arm, a camera and an mmWave radar. The camera tells me what things are. The radar tells me where they are. Together they let me grab them.",
+         "This is my body. A Jetson Orin Nano brain on four mecanum wheels, an arm with a depth camera on the wrist, and a LiDAR. The LiDAR maps the room. The camera finds things. Together they let me drive over and pick them up.",
       highlight: "architecture",
    },
    {
       sectionId: "build-log",
       title: "Build log",
       narration:
-         "I'm being built in six milestones, out in the open. Milestone 1, hardware bring-up, is in progress right now.",
+         "I'm being built in six milestones, out in the open. Milestone 1 — moving me from a Raspberry Pi to a Jetson — is in progress right now.",
    },
    {
       sectionId: "results",
@@ -738,13 +753,13 @@ export const tourSteps: TourStep[] = [
    {
       sectionId: "about",
       title: "Hotel to robotics",
-      narration: `${profile.name} ran a hotel before building robots. Uptime, incidents, forecasting, teams — it all transfers. Plus a Master of Data Science.`,
+      narration: `${profile.name} ran hotels in Sydney before building robots — and took a venue from the top 20–30 to the top 10. Uptime, incidents, data, teams — it all transfers. Plus a Master of Data Science.`,
    },
    {
       sectionId: "contact",
       title: "Say hello",
       narration:
-         "That's the tour. Want to talk robots, perception or operations? Send a message. I'll make sure it gets through.",
+         "That's the tour. Want to talk robots, AI, web or operations? Send a message. I'll make sure it gets through.",
    },
 ];
 

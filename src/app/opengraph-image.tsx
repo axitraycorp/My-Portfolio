@@ -13,7 +13,7 @@ const C = {
    muted: "#a9b1bf",
    line: "#2c3340",
    camera: "#5fd6ea",
-   radar: "#f1b445",
+   lidar: "#f1b445",
    fused: "#c39cf2",
 };
 
@@ -79,7 +79,7 @@ export default async function Image() {
             <Corner pos="bl" />
             <Corner pos="br" />
 
-            {/* radar arcs */}
+            {/* LiDAR scan arcs */}
             {[520, 400, 280].map((d) => (
                <div
                   key={d}
@@ -90,7 +90,7 @@ export default async function Image() {
                      width: d,
                      height: d,
                      borderRadius: d,
-                     border: `2px solid ${C.radar}`,
+                     border: `2px solid ${C.lidar}`,
                      opacity: 0.35,
                   }}
                />

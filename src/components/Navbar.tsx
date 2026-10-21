@@ -30,7 +30,7 @@ export default function Navbar({ name, links }: { name: string; links: NavLink[]
                className="group flex items-baseline gap-2xs font-display text-lead font-semibold tracking-tight"
             >
                {name}
-               <span className="font-mono text-caption font-normal text-camera transition-colors group-hover:text-radar">
+               <span className="font-mono text-caption font-normal text-camera transition-colors group-hover:text-lidar">
                   /unit-7
                </span>
             </Link>

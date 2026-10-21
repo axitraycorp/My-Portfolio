@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 type Palette = Record<
-   "background" | "camera" | "radar" | "fused" | "ink" | "line" | "surface",
+   "background" | "camera" | "lidar" | "fused" | "ink" | "line" | "surface",
    string
 >;
 
@@ -26,7 +26,7 @@ function readPalette(): Palette {
    return {
       background: readToken("--background"),
       camera: readToken("--camera"),
-      radar: readToken("--radar"),
+      lidar: readToken("--lidar"),
       fused: readToken("--fused"),
       ink: readToken("--ink"),
       line: readToken("--line"),
@@ -48,16 +48,130 @@ function usePalette(): Palette {
    return palette;
 }
 
-// Joint angles: [base yaw, shoulder, elbow, wrist] in radians
+/*
+ * Geometry follows the real robot's drawing, at 1 unit = 100 mm:
+ * 212 mm chassis, 65 mm mecanum wheels, arm links 74 / 74 / 140 mm,
+ * first arm joint 152 mm above the floor. +x is the robot's front.
+ */
+const WHEEL_R = 0.325;
+const DECK_Y = 0.71;
+const TURRET_X = 0.45;
+const SHOULDER_Y = 1.52;
+const LINK_1 = 0.74;
+const LINK_2 = 0.74;
+const LINK_3 = 1.4;
+const LIDAR_POS: [number, number, number] = [0.86, DECK_Y + 0.1, 0];
+
+// Joint angles: [turret yaw, shoulder, elbow, wrist] in radians
 const POSES: [number, number, number, number][] = [
-   [0.25, -0.45, -1.15, -0.65],
-   [-0.35, -0.8, -0.85, -0.85],
-   [0.05, -0.3, -1.45, -0.45],
-   [0.55, -0.7, -0.75, -0.95],
+   [0.15, -0.9, -0.9, -0.9],
+   [-0.3, -0.3, -0.6, -0.5],
+   [0.35, -0.7, -1.3, -0.4],
+   [-0.1, -0.5, -0.9, -1.0],
 ];
 const POSE_SECONDS = 3.2;
 
 const smooth = (t: number) => t * t * (3 - 2 * t);
+
+function Material({ color, metal = 0.3 }: { color: string; metal?: number }) {
+   return <meshStandardMaterial color={color} roughness={0.55} metalness={metal} />;
+}
+
+/** Mecanum chassis: lower body, four spinning wheels, rear electronics deck (Jetson) and LiDAR. */
+function Chassis({ palette, animate }: { palette: Palette; animate: boolean }) {
+   const wheels: [number, number][] = [
+      [0.68, 0.67],
+      [0.68, -0.67],
+      [-0.68, 0.67],
+      [-0.68, -0.67],
+   ];
+   const spinners = useRef<(THREE.Group | null)[]>([]);
+   useFrame((_, delta) => {
+      if (!animate) return;
+      for (const s of spinners.current) if (s) s.rotation.y += delta * 2.4;
+   });
+   return (
+      <group>
+         <mesh position={[0, 0.45, 0]}>
+            <boxGeometry args={[2.0, 0.5, 1.0]} />
+            <Material color={palette.surface} />
+         </mesh>
+         <mesh position={[0, DECK_Y - 0.02, 0]}>
+            <boxGeometry args={[2.08, 0.04, 1.06]} />
+            <Material color={palette.ink} metal={0.5} />
+         </mesh>
+         {/* rear electronics deck: where the Jetson Orin Nano sits */}
+         <mesh position={[-0.55, DECK_Y + 0.3, 0]}>
+            <boxGeometry args={[0.9, 0.58, 0.9]} />
+            <Material color={palette.surface} />
+         </mesh>
+         <mesh position={[-0.55, DECK_Y + 0.3, 0.452]}>
+            <planeGeometry args={[0.5, 0.18]} />
+            <meshBasicMaterial color={palette.fused} transparent opacity={0.8} />
+         </mesh>
+         {wheels.map(([x, z], i) => (
+            <group key={`${x}${z}`} position={[x, WHEEL_R, z]} rotation={[Math.PI / 2, 0, 0]}>
+               <group
+                  ref={(el) => {
+                     spinners.current[i] = el;
+                  }}
+               >
+                  <mesh>
+                     <cylinderGeometry args={[WHEEL_R, WHEEL_R, 0.3, 20]} />
+                     <Material color={palette.ink} metal={0.2} />
+                  </mesh>
+                  <mesh>
+                     <cylinderGeometry args={[WHEEL_R * 0.55, WHEEL_R * 0.55, 0.31, 16]} />
+                     <Material color={palette.surface} metal={0.6} />
+                  </mesh>
+                  {/* hub spoke so the spin is visible */}
+                  <mesh>
+                     <boxGeometry args={[WHEEL_R * 1.6, 0.32, 0.06]} />
+                     <Material color={palette.line} metal={0.4} />
+                  </mesh>
+               </group>
+            </group>
+         ))}
+         {/* TOF LiDAR */}
+         <mesh position={LIDAR_POS}>
+            <cylinderGeometry args={[0.15, 0.17, 0.18, 20]} />
+            <Material color={palette.ink} metal={0.4} />
+         </mesh>
+         <mesh position={[LIDAR_POS[0], LIDAR_POS[1] + 0.03, LIDAR_POS[2]]}>
+            <cylinderGeometry args={[0.152, 0.152, 0.03, 20]} />
+            <meshBasicMaterial color={palette.lidar} />
+         </mesh>
+      </group>
+   );
+}
+
+/** Cyan depth-camera frustum, opening along the wrist's +y. */
+function CameraFrustum({ color }: { color: string }) {
+   const geometry = useMemo(() => {
+      const g = new THREE.ConeGeometry(0.85, 2.2, 4, 1, true);
+      g.rotateY(Math.PI / 4);
+      g.rotateX(Math.PI); // apex down (at the camera), opening up along +y
+      g.translate(0, 1.1, 0);
+      return g;
+   }, []);
+   const edges = useMemo(() => new THREE.EdgesGeometry(geometry), [geometry]);
+   return (
+      <group>
+         <mesh geometry={geometry}>
+            <meshBasicMaterial
+               color={color}
+               transparent
+               opacity={0.07}
+               side={THREE.DoubleSide}
+               depthWrite={false}
+            />
+         </mesh>
+         <lineSegments geometry={edges}>
+            <lineBasicMaterial color={color} transparent opacity={0.8} />
+         </lineSegments>
+      </group>
+   );
+}
 
 function Arm({ palette, followPointer }: { palette: Palette; followPointer: boolean }) {
    const yaw = useRef<THREE.Group>(null);
@@ -90,55 +204,69 @@ function Arm({ palette, followPointer }: { palette: Palette; followPointer: bool
       if (wrist.current) wrist.current.rotation.z = pose[3];
    });
 
-   const body = <meshStandardMaterial color={palette.surface} roughness={0.55} metalness={0.25} />;
-   const joint = <meshStandardMaterial color={palette.ink} roughness={0.4} metalness={0.4} />;
+   const body = <Material color={palette.surface} />;
+   const servo = <Material color={palette.ink} metal={0.45} />;
+   const turretTop = DECK_Y + 0.22;
 
    return (
-      <group>
-         <mesh position={[0, 0.1, 0]}>
-            <cylinderGeometry args={[0.38, 0.42, 0.2, 24]} />
+      <group position={[TURRET_X, 0, 0]}>
+         <mesh position={[0, DECK_Y + 0.11, 0]}>
+            <cylinderGeometry args={[0.36, 0.4, 0.22, 28]} />
             {body}
          </mesh>
-         <group ref={yaw} position={[0, 0.2, 0]}>
-            <mesh position={[0, 0.18, 0]}>
-               <cylinderGeometry args={[0.13, 0.15, 0.36, 16]} />
-               {body}
+         <group ref={yaw} position={[0, turretTop, 0]}>
+            <mesh position={[0, (SHOULDER_Y - turretTop) / 2, 0]}>
+               <boxGeometry args={[0.36, SHOULDER_Y - turretTop, 0.36]} />
+               {servo}
             </mesh>
-            <group ref={shoulder} position={[0, 0.38, 0]}>
+            <group ref={shoulder} position={[0, SHOULDER_Y - turretTop, 0]}>
                <mesh rotation={[Math.PI / 2, 0, 0]}>
-                  <cylinderGeometry args={[0.12, 0.12, 0.3, 16]} />
-                  {joint}
+                  <cylinderGeometry args={[0.14, 0.14, 0.42, 16]} />
+                  {servo}
                </mesh>
-               <mesh position={[0, 0.55, 0]}>
-                  <boxGeometry args={[0.16, 1.1, 0.16]} />
+               <mesh position={[0, LINK_1 / 2, 0]}>
+                  <boxGeometry args={[0.3, LINK_1, 0.3]} />
                   {body}
                </mesh>
-               <group ref={elbow} position={[0, 1.1, 0]}>
+               <group ref={elbow} position={[0, LINK_1, 0]}>
                   <mesh rotation={[Math.PI / 2, 0, 0]}>
-                     <cylinderGeometry args={[0.1, 0.1, 0.26, 16]} />
-                     {joint}
+                     <cylinderGeometry args={[0.13, 0.13, 0.38, 16]} />
+                     {servo}
                   </mesh>
-                  <mesh position={[0, 0.45, 0]}>
-                     <boxGeometry args={[0.13, 0.9, 0.13]} />
+                  <mesh position={[0, LINK_2 / 2, 0]}>
+                     <boxGeometry args={[0.28, LINK_2, 0.28]} />
                      {body}
                   </mesh>
-                  <group ref={wrist} position={[0, 0.9, 0]}>
-                     <mesh>
-                        <sphereGeometry args={[0.08, 16, 12]} />
-                        {joint}
+                  <group ref={wrist} position={[0, LINK_2, 0]}>
+                     <mesh rotation={[Math.PI / 2, 0, 0]}>
+                        <cylinderGeometry args={[0.12, 0.12, 0.34, 16]} />
+                        {servo}
                      </mesh>
-                     <mesh position={[0, 0.12, 0]}>
-                        <boxGeometry args={[0.22, 0.06, 0.1]} />
+                     {/* wrist servo, gripper palm and fingers (140 mm to the tip) */}
+                     <mesh position={[0, 0.3, 0]}>
+                        <boxGeometry args={[0.36, 0.4, 0.3]} />
+                        {servo}
+                     </mesh>
+                     <mesh position={[0, 0.56, 0]}>
+                        <boxGeometry args={[0.82, 0.12, 0.34]} />
                         {body}
                      </mesh>
-                     <mesh position={[-0.08, 0.24, 0]}>
-                        <boxGeometry args={[0.035, 0.2, 0.08]} />
-                        {joint}
+                     <mesh position={[-0.33, LINK_3 - 0.4, 0]}>
+                        <boxGeometry args={[0.1, 0.8, 0.3]} />
+                        {servo}
                      </mesh>
-                     <mesh position={[0.08, 0.24, 0]}>
-                        <boxGeometry args={[0.035, 0.2, 0.08]} />
-                        {joint}
+                     <mesh position={[0.33, LINK_3 - 0.4, 0]}>
+                        <boxGeometry args={[0.1, 0.8, 0.3]} />
+                        {servo}
                      </mesh>
+                     {/* depth camera on the wrist, looking along the gripper */}
+                     <group position={[0, 0.5, 0.3]}>
+                        <mesh>
+                           <boxGeometry args={[0.6, 0.16, 0.16]} />
+                           <Material color={palette.ink} metal={0.2} />
+                        </mesh>
+                        <CameraFrustum color={palette.camera} />
+                     </group>
                   </group>
                </group>
             </group>
@@ -147,83 +275,79 @@ function Arm({ palette, followPointer }: { palette: Palette; followPointer: bool
    );
 }
 
-/** Cyan camera frustum attached to the base, looking along +x. */
-function CameraFrustum({ color }: { color: string }) {
-   const geometry = useMemo(() => {
-      const g = new THREE.ConeGeometry(1.15, 2.6, 4, 1, true);
-      g.rotateY(Math.PI / 4);
-      g.rotateZ(Math.PI / 2); // apex toward -x, opening toward +x
-      g.translate(1.3, 0, 0);
-      return g;
-   }, []);
-   const edges = useMemo(() => new THREE.EdgesGeometry(geometry), [geometry]);
-   return (
-      <group position={[0.4, 0.32, 0]} rotation={[0, 0, -0.14]}>
-         <mesh geometry={geometry}>
-            <meshBasicMaterial
-               color={color}
-               transparent
-               opacity={0.07}
-               side={THREE.DoubleSide}
-               depthWrite={false}
-            />
-         </mesh>
-         <lineSegments geometry={edges}>
-            <lineBasicMaterial color={color} transparent opacity={0.85} />
-         </lineSegments>
-      </group>
-   );
-}
+const LIDAR_RANGE = 3.4;
+const TRAIL = 0.9; // radians of fading trail behind the beam
 
-const RADAR_RANGE = 2.8;
-const RADAR_HALF_FOV = 0.85;
-
-/** Amber radar sector on the floor with a sweeping beam. */
-function RadarSweep({ color, animate }: { color: string; animate: boolean }) {
+/** Amber 360° LiDAR scan on the floor: range rings and a rotating beam with a fading trail. */
+function LidarScan({ color, animate }: { color: string; animate: boolean }) {
    const beam = useRef<THREE.Group>(null);
-   useFrame(({ clock }) => {
-      if (animate && beam.current)
-         beam.current.rotation.y = Math.sin(clock.elapsedTime * 1.4) * RADAR_HALF_FOV;
+   useFrame((_, delta) => {
+      if (animate && beam.current) beam.current.rotation.y += delta * 1.6;
    });
    const beamGeometry = useMemo(
       () =>
          new THREE.BufferGeometry().setFromPoints([
             new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(RADAR_RANGE, 0, 0),
+            new THREE.Vector3(LIDAR_RANGE, 0, 0),
          ]),
       []
    );
+   // Trail as stacked thin wedges, more transparent the further behind the beam
+   const trail = [0.16, 0.11, 0.07, 0.04];
    return (
-      <group position={[0.2, 0.012, 0]}>
-         <mesh rotation={[-Math.PI / 2, 0, 0]}>
-            <circleGeometry args={[RADAR_RANGE, 40, -RADAR_HALF_FOV, RADAR_HALF_FOV * 2]} />
-            <meshBasicMaterial
-               color={color}
-               transparent
-               opacity={0.09}
-               depthWrite={false}
-               side={THREE.DoubleSide}
-            />
-         </mesh>
-         {[1.0, 1.9, RADAR_RANGE].map((r) => (
+      <group position={[LIDAR_POS[0], 0.012, LIDAR_POS[2]]}>
+         {[1.1, 2.2, LIDAR_RANGE].map((r) => (
             <mesh key={r} rotation={[-Math.PI / 2, 0, 0]}>
-               <ringGeometry
-                  args={[r - 0.008, r + 0.008, 48, 1, -RADAR_HALF_FOV, RADAR_HALF_FOV * 2]}
-               />
+               <ringGeometry args={[r - 0.012, r + 0.012, 64]} />
                <meshBasicMaterial
                   color={color}
                   transparent
-                  opacity={0.45}
+                  opacity={0.35}
                   depthWrite={false}
                   side={THREE.DoubleSide}
                />
             </mesh>
          ))}
          <group ref={beam}>
+            {trail.map((opacity, i) => (
+               <mesh key={opacity} rotation={[-Math.PI / 2, 0, 0]}>
+                  <circleGeometry
+                     args={[LIDAR_RANGE, 16, (i * TRAIL) / trail.length, TRAIL / trail.length]}
+                  />
+                  <meshBasicMaterial
+                     color={color}
+                     transparent
+                     opacity={opacity}
+                     depthWrite={false}
+                     side={THREE.DoubleSide}
+                  />
+               </mesh>
+            ))}
             <lineSegments geometry={beamGeometry}>
                <lineBasicMaterial color={color} />
             </lineSegments>
          </group>
+      </group>
+   );
+}
+
+/**
+ * The whole robot (chassis, arm, LiDAR scan) drives a slow loop: a mecanum
+ * strafe sideways plus a gentle turn, so it reads as a moving robot.
+ */
+function MobileRobot({ palette, lowPower }: { palette: Palette; lowPower: boolean }) {
+   const robot = useRef<THREE.Group>(null);
+   useFrame(({ clock }) => {
+      const t = clock.elapsedTime;
+      if (!robot.current) return;
+      robot.current.position.set(Math.sin(t * 0.35) * 0.25, 0, Math.sin(t * 0.22) * 0.55);
+      robot.current.rotation.y = Math.sin(t * 0.3) * 0.18;
+   });
+   return (
+      <group ref={robot}>
+         <LidarScan color={palette.lidar} animate />
+         <Chassis palette={palette} animate />
+         <Arm palette={palette} followPointer={!lowPower} />
       </group>
    );
 }
@@ -241,22 +365,22 @@ const DETECTIONS: Detection[] = [
    {
       label: "cup 0.91 · 0.82 m",
       shape: "cup",
-      position: [1.9, 0.32, 0.65],
-      size: [0.34, 0.42, 0.34],
+      position: [2.3, 0.36, 1.25],
+      size: [0.5, 0.7, 0.5],
       phase: 0,
    },
    {
       label: "box 0.87 · 1.10 m",
       shape: "box",
-      position: [2.0, 0.28, -0.35],
-      size: [0.46, 0.36, 0.4],
+      position: [3.1, 0.26, -1.25],
+      size: [0.7, 0.5, 0.6],
       phase: 1.7,
    },
    {
       label: "ball 0.79 · 0.95 m",
       shape: "ball",
-      position: [1.45, 0.3, -0.15],
-      size: [0.32, 0.32, 0.32],
+      position: [2.55, 0.26, 0.05],
+      size: [0.5, 0.5, 0.5],
       phase: 3.1,
    },
 ];
@@ -274,11 +398,11 @@ function DetectedObject({
    useFrame(({ clock }) => {
       if (animate && group.current)
          group.current.position.y =
-            det.position[1] + Math.sin(clock.elapsedTime * 0.9 + det.phase) * 0.05;
+            det.position[1] + Math.sin(clock.elapsedTime * 0.9 + det.phase) * 0.04;
    });
    const [w, h, d] = det.size;
    const boxEdges = useMemo(
-      () => new THREE.EdgesGeometry(new THREE.BoxGeometry(w * 1.25, h * 1.25, d * 1.25)),
+      () => new THREE.EdgesGeometry(new THREE.BoxGeometry(w * 1.2, h * 1.2, d * 1.2)),
       [w, h, d]
    );
    return (
@@ -293,7 +417,7 @@ function DetectedObject({
             <lineBasicMaterial color={palette.fused} />
          </lineSegments>
          <Html
-            position={[-w * 0.62, h * 0.62 + 0.02, d * 0.62]}
+            position={[-w * 0.6, h * 0.6 + 0.02, d * 0.6]}
             zIndexRange={[5, 0]}
             style={{ pointerEvents: "none" }}
          >
@@ -320,7 +444,7 @@ function Throttle({ fps, active }: { fps: number; active: boolean }) {
    return null;
 }
 
-const LOOK_TARGET: [number, number, number] = [1.05, 0.55, -0.1];
+const LOOK_TARGET: [number, number, number] = [1.35, 0.95, 0];
 
 export default function RobotScene({
    paused,
@@ -345,7 +469,7 @@ export default function RobotScene({
             alpha: false,
             powerPreference: lowPower ? "low-power" : "high-performance",
          }}
-         camera={{ position: [4.1, 2.3, 3.5], fov: 40 }}
+         camera={{ position: [5.6, 3.9, 6.2], fov: 38 }}
          onCreated={({ gl }) => {
             gl.setClearColor(palette.background);
             onReady();
@@ -355,12 +479,10 @@ export default function RobotScene({
          <LookAt target={LOOK_TARGET} />
          <Throttle fps={30} active={lowPower && !paused} />
          <ambientLight intensity={0.55} />
-         <directionalLight position={[3, 5, 2]} intensity={1.4} />
-         <directionalLight position={[-3, 2, -2]} intensity={0.4} color={palette.camera} />
-         <gridHelper args={[10, 20, palette.line, palette.line]} />
-         <RadarSweep color={palette.radar} animate />
-         <CameraFrustum color={palette.camera} />
-         <Arm palette={palette} followPointer={!lowPower} />
+         <directionalLight position={[4, 7, 3]} intensity={1.4} />
+         <directionalLight position={[-4, 3, -3]} intensity={0.4} color={palette.camera} />
+         <gridHelper args={[16, 32, palette.line, palette.line]} />
+         <MobileRobot palette={palette} lowPower={lowPower} />
          {detections.map((det) => (
             <DetectedObject key={det.label} det={det} palette={palette} animate />
          ))}

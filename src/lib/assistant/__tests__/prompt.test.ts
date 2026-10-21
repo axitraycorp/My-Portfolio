@@ -51,11 +51,19 @@ describe("buildSystemPrompt", () => {
       expect(prompt).toContain("robot (Robot)");
    });
 
-   it("gives recruiters' questions real answers and hides unfilled ones", () => {
+   it("gives recruiters' questions real answers", () => {
       expect(prompt).toContain("## For recruiters");
       for (const role of content.recruiter.targetRoles) expect(prompt).toContain(role);
-      expect(prompt).toContain("Availability: (not provided)");
+      expect(prompt).toContain(`Availability: ${content.recruiter.availability}`);
+      expect(prompt).toContain(`Work rights: ${content.recruiter.workRights}`);
       expect(prompt).toContain("/cv");
+   });
+
+   it("marks unfilled recruiter facts as not provided", () => {
+      const recruiter = { ...content.recruiter, availability: "TODO: notice period" };
+      expect(buildSystemPrompt({ ...content, recruiter })).toContain(
+         "Availability: (not provided)"
+      );
    });
 
    it("is deterministic so it can be prompt-cached", () => {

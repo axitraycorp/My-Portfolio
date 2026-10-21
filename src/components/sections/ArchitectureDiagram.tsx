@@ -12,7 +12,7 @@ type Layout = {
 
 const CHANNEL_VAR: Record<Channel, string> = {
    camera: "var(--camera)",
-   radar: "var(--radar)",
+   lidar: "var(--lidar)",
    fused: "var(--fused)",
    neutral: "var(--line-strong)",
 };
@@ -180,7 +180,7 @@ export function ArchitectureDiagram({
          <Diagram arch={architecture} layout={narrow} variant="narrow" titleId={titleId} />
          <figcaption className="arch__legend">
             <span data-channel="camera">camera</span>
-            <span data-channel="radar">radar</span>
+            <span data-channel="lidar">LiDAR</span>
             <span data-channel="fused">fused</span>
          </figcaption>
       </figure>

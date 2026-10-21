@@ -19,7 +19,7 @@ const COLORS = [
    ["line", "Hairlines"],
    ["line-strong", "Frames, borders"],
    ["camera", "Camera · cyan"],
-   ["radar", "Radar · amber"],
+   ["lidar", "LiDAR · amber"],
    ["fused", "Fused · violet"],
    ["success", "Done"],
    ["warning", "Warnings, recording"],
@@ -27,7 +27,7 @@ const COLORS = [
 
 const TYPE = [
    ["display", "--step-5", "Robots that see"],
-   ["h1", "--step-4", "Camera–radar fusion"],
+   ["h1", "--step-4", "Camera–LiDAR fusion"],
    ["h2", "--step-3", "Build log"],
    ["h3", "--step-2", "Hardware bring-up"],
    ["lead", "--step-1", "A lead paragraph introduces a section."],
@@ -69,8 +69,8 @@ function ThemePanel({ theme }: { theme: "dark" | "light" }) {
                <HudFrame channel="camera" className="p-s">
                   <TopicLabel topic="/camera/image_raw" channel="camera" />
                </HudFrame>
-               <HudFrame channel="radar" className="p-s">
-                  <TopicLabel topic="/radar/points" channel="radar" />
+               <HudFrame channel="lidar" className="p-s">
+                  <TopicLabel topic="/scan" channel="lidar" />
                </HudFrame>
                <HudFrame channel="fused" className="p-s">
                   <TopicLabel topic="/fusion/tracks" channel="fused" />
@@ -95,7 +95,7 @@ function ThemePanel({ theme }: { theme: "dark" | "light" }) {
                </div>
                <div className="relative grid h-24 place-items-center rounded-hud bg-surface text-muted">
                   box
-                  <BoundingBox label="box" confidence={0.87} channel="radar" />
+                  <BoundingBox label="box" confidence={0.87} channel="lidar" />
                </div>
                <div className="relative grid h-24 place-items-center rounded-hud bg-surface text-muted">
                   track #3

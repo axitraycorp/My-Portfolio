@@ -21,8 +21,8 @@
    .hud-frame[data-channel="camera"] {
       --hud-c: var(--camera);
    }
-   .hud-frame[data-channel="radar"] {
-      --hud-c: var(--radar);
+   .hud-frame[data-channel="lidar"] {
+      --hud-c: var(--lidar);
    }
    .hud-frame[data-channel="fused"] {
       --hud-c: var(--fused);
@@ -61,8 +61,8 @@
    [data-channel="camera"] {
       --chan: var(--camera);
    }
-   [data-channel="radar"] {
-      --chan: var(--radar);
+   [data-channel="lidar"] {
+      --chan: var(--lidar);
    }
    [data-channel="fused"] {
       --chan: var(--fused);

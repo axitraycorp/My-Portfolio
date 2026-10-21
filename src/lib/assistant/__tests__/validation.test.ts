@@ -101,7 +101,7 @@ describe("parseToolCall", () => {
       ["unknown tool", "delete_everything", {}],
       ["unknown section", "scroll_to_section", { sectionId: "admin" }],
       ["unknown element", "highlight_element", { elementId: "body", label: "x" }],
-      ["extra fields", "open_project", { slug: "perception-arm", url: "https://evil.example" }],
+      ["extra fields", "open_project", { slug: "mobile-manipulator", url: "https://evil.example" }],
       ["too many questions", "suggest_questions", { questions: ["a?", "b?", "c?", "d?"] }],
    ])("rejects %s", (_label, name, input) => {
       expect(parseToolCall(name, input)).toBeNull();

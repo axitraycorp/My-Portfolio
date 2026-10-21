@@ -3,10 +3,10 @@
 import { useEffect } from "react";
 import { BOOT_KEY } from "@/lib/theme";
 
-const LINES: { text: string; channel?: "camera" | "radar" | "fused" }[] = [
+const LINES: { text: string; channel?: "camera" | "lidar" | "fused" }[] = [
    { text: "initialising sensors..." },
    { text: "camera ok", channel: "camera" },
-   { text: "radar ok", channel: "radar" },
+   { text: "LiDAR ok", channel: "lidar" },
    { text: "fusion online", channel: "fused" },
 ];
 

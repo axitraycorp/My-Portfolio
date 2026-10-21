@@ -1,12 +1,12 @@
 # Robotics & Edge AI Portfolio
 
-A portfolio built like a robot's perception HUD. The centrepiece is a camera–radar perception arm (NVIDIA Jetson Orin Nano, ROS 2, TensorRT YOLO, MoveIt 2), presented as an open build log with honest metrics. **Unit-7**, the robot's onboard AI, gives visitors a guided tour and answers questions.
+A portfolio built like a robot's perception HUD. The centrepiece is a Jetson mobile manipulator — a mecanum-wheeled robot with a servo arm, wrist depth camera and TOF LiDAR (NVIDIA Jetson Orin Nano, ROS 2, TensorRT YOLO, SLAM/Nav2, MoveIt 2), presented as an open build log with honest metrics. **Unit-7**, the robot's onboard AI, gives visitors a guided tour and answers questions.
 
 **Live:** https://my-portfolio-umber-ten-96.vercel.app
 
 ## What's inside
 
-- **Hero** with a boot sequence and a lazy-loaded React Three Fiber scene (stylised arm, cyan camera frustum, amber radar sweep, detected objects). A static SVG fallback is shown first, and kept under reduced motion or without WebGL.
+- **Hero** with a boot sequence and a lazy-loaded React Three Fiber scene (the robot modelled to its real dimensions: mecanum base, arm, cyan camera frustum, amber LiDAR scan, detected objects). A static SVG fallback is shown first, and kept under reduced motion or without WebGL.
 - **Flagship robot**: spec grid and an animated ROS 2 architecture diagram (CSS `offset-path` data packets).
 - **Build log**: six milestones on a timeline that draws itself as you scroll (scroll-driven animations).
 - **Results**: metrics table. Values stay "measuring" until a real measurement exists; real numbers count up.

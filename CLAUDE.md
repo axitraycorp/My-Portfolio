@@ -19,9 +19,9 @@ Personal portfolio for a robotics / edge-AI engineer (formerly a hotel manager).
 "Robot perception HUD": the site should feel like looking through the robot's sensors.
 
 - **Dark-first.** Light theme via `[data-theme="light"]` and `prefers-color-scheme`.
-- **Colour tokens** (oklch, in `src/styles/tokens.css`): `background`, `surface`, `ink`, `muted`, `line`, `radar` (amber), `camera` (cyan), `fused` (violet — camera + radar), `success`, `warning`. Camera things are cyan, radar things are amber, fused things are violet — keep this mapping consistent everywhere.
+- **Colour tokens** (oklch, in `src/styles/tokens.css`): `background`, `surface`, `ink`, `muted`, `line`, `lidar` (amber), `camera` (cyan), `fused` (violet — camera + LiDAR), `success`, `warning`. Camera things are cyan, LiDAR things are amber, fused things are violet — keep this mapping consistent everywhere.
 - **Fonts** (next/font): Space Grotesk (display/headings), Inter (body), JetBrains Mono (labels, ROS topics, numbers, terminal text).
-- **Motifs:** corner-bracket frames (`HudFrame`), ROS-topic labels like `/robot/status` (`TopicLabel`), detection bounding boxes with confidence labels (`BoundingBox`), scan lines, radar sweeps. Use sparingly — content first.
+- **Motifs:** corner-bracket frames (`HudFrame`), ROS-topic labels like `/robot/status` (`TopicLabel`), detection bounding boxes with confidence labels (`BoundingBox`), scan lines, LiDAR scans. Use sparingly — content first.
 - Generous whitespace, thin 1px lines, small mono caps labels, no drop shadows except glows on interactive focus.
 
 ## Motion

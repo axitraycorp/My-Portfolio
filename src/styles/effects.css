@@ -34,8 +34,8 @@
 .boot__line[data-channel="camera"] {
    color: var(--camera);
 }
-.boot__line[data-channel="radar"] {
-   color: var(--radar);
+.boot__line[data-channel="lidar"] {
+   color: var(--lidar);
 }
 .boot__line[data-channel="fused"] {
    color: var(--fused);
@@ -416,11 +416,11 @@
    position: relative;
    display: inline-block;
    padding: 0.05em 0.5em;
-   border: 1px dashed color-mix(in oklch, var(--radar) 55%, transparent);
+   border: 1px dashed color-mix(in oklch, var(--lidar) 55%, transparent);
    border-radius: 3px;
    font-family: var(--font-mono);
    font-size: var(--step--1);
-   color: var(--radar);
+   color: var(--lidar);
    overflow: hidden;
 }
 .measuring::after {
@@ -430,7 +430,7 @@
    background: linear-gradient(
       90deg,
       transparent,
-      color-mix(in oklch, var(--radar) 22%, transparent),
+      color-mix(in oklch, var(--lidar) 22%, transparent),
       transparent
    );
    transform: translateX(-100%);
@@ -453,7 +453,7 @@
 }
 @keyframes row-pulse {
    0% {
-      background: color-mix(in oklch, var(--radar) 28%, transparent);
+      background: color-mix(in oklch, var(--lidar) 28%, transparent);
    }
    100% {
       background: transparent;
@@ -462,7 +462,7 @@
 @media (prefers-reduced-motion: reduce) {
    .results__row[data-pulse] {
       animation: none;
-      outline: 2px solid var(--radar);
+      outline: 2px solid var(--lidar);
       outline-offset: -2px;
    }
 }
@@ -519,7 +519,7 @@
          var(--line) 0deg,
          var(--camera) 60deg,
          var(--fused) 120deg,
-         var(--radar) 180deg,
+         var(--lidar) 180deg,
          var(--line) 240deg,
          var(--line) 360deg
       );
@@ -638,14 +638,14 @@
 .transfer__from {
    font-family: var(--font-mono);
    font-size: var(--step--1);
-   color: var(--radar);
+   color: var(--lidar);
 }
 .transfer__arrow {
    position: relative;
    height: 1.25rem;
    width: 2px;
    margin-left: 0.4rem;
-   background: linear-gradient(var(--radar), var(--camera));
+   background: linear-gradient(var(--lidar), var(--camera));
 }
 .transfer__arrow::after {
    content: "";
@@ -669,7 +669,7 @@
       width: 100%;
       height: 2px;
       margin: 0;
-      background: linear-gradient(90deg, var(--radar), var(--camera));
+      background: linear-gradient(90deg, var(--lidar), var(--camera));
    }
    .transfer__arrow::after {
       left: auto;

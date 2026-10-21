@@ -8,7 +8,7 @@ export function About() {
    return (
       <section id="about" aria-labelledby="about-title" className="section">
          <div className="section__inner">
-            <TopicLabel topic="/operator/profile" channel="radar" className="section__eyebrow" />
+            <TopicLabel topic="/operator/profile" channel="lidar" className="section__eyebrow" />
             <h2 id="about-title" className="section__title">
                From hotel operations to robotics
             </h2>
@@ -21,7 +21,7 @@ export function About() {
             {/* Skills transfer: hotel ops skill → engineering skill */}
             <div className="mt-xl">
                <div className="transfer__head" aria-hidden="true">
-                  <TopicLabel topic="/hotel/ops" channel="radar" />
+                  <TopicLabel topic="/hotel/ops" channel="lidar" />
                   <TopicLabel topic="/robot/engineering" channel="camera" />
                </div>
                <ul
@@ -48,7 +48,7 @@ export function About() {
                   const org = publicText(job.organisation);
                   const achievements = publicList(job.achievements);
                   return (
-                     <HudFrame key={job.role} as="article" channel="radar" surface className="p-m">
+                     <HudFrame key={job.role} as="article" channel="lidar" surface className="p-m">
                         <p className="mono-caps">Experience · {formatYears(job.start, job.end)}</p>
                         <h3 className="mt-2xs font-display text-h3 font-medium">{job.role}</h3>
                         <p className="text-muted">{org ?? <Tbc>hotel name to be confirmed</Tbc>}</p>

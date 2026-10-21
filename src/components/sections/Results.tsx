@@ -7,7 +7,7 @@ export function Results() {
    return (
       <section id="results" aria-labelledby="results-title" className="section">
          <div className="section__inner">
-            <TopicLabel topic="/robot/diagnostics" channel="radar" className="section__eyebrow" />
+            <TopicLabel topic="/robot/diagnostics" channel="lidar" className="section__eyebrow" />
             <h2 id="results-title" className="section__title">
                Results
             </h2>

@@ -50,11 +50,11 @@
    position: absolute;
    inset: -1px;
    border-radius: 50%;
-   border: 1.5px solid var(--radar);
+   border: 1.5px solid var(--lidar);
    opacity: 0;
-   animation: radar-ring 2.6s ease-out infinite;
+   animation: lidar-ring 2.6s ease-out infinite;
 }
-@keyframes radar-ring {
+@keyframes lidar-ring {
    0% {
       transform: scale(0.9);
       opacity: 0.8;
@@ -159,8 +159,8 @@
 
 .assistant-note {
    padding: 0.35rem var(--space-s);
-   background: color-mix(in oklch, var(--radar) 14%, transparent);
-   color: var(--radar);
+   background: color-mix(in oklch, var(--lidar) 14%, transparent);
+   color: var(--lidar);
    font-family: var(--font-mono);
    font-size: var(--step--2);
    text-transform: uppercase;

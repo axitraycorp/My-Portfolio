@@ -208,7 +208,7 @@ export default function AssistantPanel({ open, onClose, request, tourSteps }: Pr
                   <h2 id="unit7-title" className="font-display text-lead font-semibold">
                      Unit-7
                   </h2>
-                  <TopicLabel topic="/unit-7/status" channel={offline ? "radar" : "fused"}>
+                  <TopicLabel topic="/unit-7/status" channel={offline ? "lidar" : "fused"}>
                      {status}
                   </TopicLabel>
                </div>

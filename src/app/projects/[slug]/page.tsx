@@ -111,7 +111,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
 
          <div className="detail mx-auto mt-xl max-w-content">
             <section aria-labelledby="problem" className="detail__section">
-               <TopicLabel topic="/case/problem" channel="radar" />
+               <TopicLabel topic="/case/problem" channel="lidar" />
                <h2 id="problem" className="detail__title">
                   Problem
                </h2>
@@ -145,7 +145,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
             </section>
 
             <section aria-labelledby="results-title" className="detail__section">
-               <TopicLabel topic="/case/results" channel="radar" />
+               <TopicLabel topic="/case/results" channel="lidar" />
                <h2 id="results-title" className="detail__title">
                   Results
                </h2>

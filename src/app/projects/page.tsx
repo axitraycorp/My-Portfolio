@@ -7,7 +7,8 @@ import { toCardData } from "@/components/sections/project-card-data";
 
 export const metadata: Metadata = {
    title: "Projects",
-   description: "The camera–radar perception arm and side projects in AI and hotel operations.",
+   description:
+      "A Jetson mobile manipulator with camera–LiDAR perception, and side projects in AI and hotel operations.",
    alternates: { canonical: "/projects" },
 };
 
