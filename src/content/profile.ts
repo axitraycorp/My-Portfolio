@@ -78,6 +78,8 @@ export interface ArchitectureNode {
    layer: number;
    /** Row in the wide layout, column in the narrow layout. Fractions centre a node. */
    lane: number;
+   /** Optional position for the narrow (phone) layout when layer/lane would overlap there. */
+   narrow?: { layer: number; lane: number };
    /** ROS 2 topic the node publishes, if any. */
    topic?: string;
 }
@@ -103,7 +105,7 @@ export interface ProjectMedia {
 }
 
 export interface Spec {
-   id: "compute" | "base" | "arm" | "camera" | "lidar" | "middleware";
+   id: "compute" | "base" | "arm" | "camera" | "lidar" | "voice" | "middleware";
    label: string;
    value: string;
    channel: Channel;
@@ -341,6 +343,7 @@ export const projects: Project[] = [
          "Fuse camera detections with depth and LiDAR to place each object in 3D in the map frame, and track it over time.",
          "Calibrate the wrist camera to the arm (hand–eye) and plan grasps with MoveIt 2 from the fused 3D positions.",
          "Run end to end — find an object, drive to it, pick it up and deliver it — and measure success over 50 trials.",
+         'Add voice control: speech in and out through the WonderEcho Pro, with a language model turning requests like "bring me the cup" into navigation and grasp tasks grounded in what the robot can see.',
       ],
       stack: [
          "ROS 2 Humble",
@@ -350,6 +353,7 @@ export const projects: Project[] = [
          "SLAM Toolbox",
          "Nav2",
          "MoveIt 2",
+         "LLM voice commands",
          "OpenCV",
          "Python",
          "C++",
@@ -359,7 +363,7 @@ export const projects: Project[] = [
       media: {
          image: null,
          video: null, // TODO: add demo video URL after milestone 6
-         alt: "Mecanum-wheeled mobile robot with a servo arm, a wrist-mounted depth camera and a TOF LiDAR",
+         alt: "Mecanum-wheeled mobile robot with a servo arm, a wrist-mounted depth camera, a TOF LiDAR and a voice box",
       },
       repoUrl: null, // TODO: public repo URL
       demoUrl: null,
@@ -393,6 +397,12 @@ export const projects: Project[] = [
             label: "LiDAR",
             value: "MS200 TOF LiDAR on the chassis, for SLAM and obstacle avoidance",
             channel: "lidar",
+         },
+         {
+            id: "voice",
+            label: "Voice",
+            value: "WonderEcho Pro AI voice box — wake word, speech recognition and speech synthesis",
+            channel: "fused",
          },
          {
             id: "middleware",
@@ -441,7 +451,17 @@ export const projects: Project[] = [
                channel: "fused",
                layer: 2,
                lane: 0.5,
+               narrow: { layer: 2, lane: 0 },
                topic: "/perception/objects",
+            },
+            {
+               id: "voice",
+               label: "Voice + LLM",
+               channel: "fused",
+               layer: 2,
+               lane: 1,
+               narrow: { layer: 2, lane: 1 },
+               topic: "/voice/task",
             },
             {
                id: "planning",
@@ -466,6 +486,7 @@ export const projects: Project[] = [
             { from: "detector", to: "fusion", channel: "camera", label: "boxes + depth" },
             { from: "slam", to: "fusion", channel: "lidar", label: "pose + map" },
             { from: "fusion", to: "planning", channel: "fused", label: "3D targets" },
+            { from: "voice", to: "planning", channel: "fused", label: "task" },
             { from: "planning", to: "robot", channel: "neutral", label: "commands" },
          ],
       },
@@ -640,6 +661,19 @@ export const milestones: Milestone[] = [
       ],
       metrics: ["task-success"],
    },
+   {
+      number: 7,
+      title: "Voice and LLM commands",
+      description:
+         "Spoken requests turned into robot tasks by a language model, grounded in what the robot can actually see.",
+      status: "planned",
+      deliverables: [
+         "WonderEcho Pro wake word, speech recognition and speech replies on ROS 2",
+         "LLM task parser: request → target object + action, checked against current detections",
+         "Safe refusals and clarifying questions when a request is ambiguous or impossible",
+      ],
+      metrics: ["voice-command-success"],
+   },
 ];
 
 export const metrics: Metric[] = [
@@ -715,6 +749,18 @@ export const metrics: Metric[] = [
       higherIsBetter: true,
       precision: 0,
    },
+   {
+      id: "voice-command-success",
+      label: "Voice command success",
+      unit: "%",
+      baselineLabel: "Keyword rules",
+      baseline: "measuring",
+      optimisedLabel: "LLM task parser",
+      optimised: "measuring",
+      milestone: 7,
+      higherIsBetter: true,
+      precision: 0,
+   },
 ];
 
 // ─── Tour ───────────────────────────────────────────────────────────────────
@@ -729,14 +775,13 @@ export const tourSteps: TourStep[] = [
       sectionId: "robot",
       title: "The robot",
       narration:
-         "This is my body. A Jetson Orin Nano brain on four mecanum wheels, an arm with a depth camera on the wrist, and a LiDAR. The LiDAR maps the room. The camera finds things. Together they let me drive over and pick them up.",
+         "This is my body. A Jetson Orin Nano brain on four mecanum wheels, an arm with a depth camera on the wrist, and a LiDAR. The LiDAR maps the room. The camera finds things. Together they let me drive over and pick them up. Soon you'll be able to just ask.",
       highlight: "architecture",
    },
    {
       sectionId: "build-log",
       title: "Build log",
-      narration:
-         "I'm being built in six milestones, out in the open. Milestone 1 — moving me from a Raspberry Pi to a Jetson — is in progress right now.",
+      narration: `I'm being built in ${milestones.length} milestones, out in the open. Milestone 1 — moving me from a Raspberry Pi to a Jetson — is in progress right now.`,
    },
    {
       sectionId: "results",

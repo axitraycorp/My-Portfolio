@@ -23,7 +23,7 @@ function layouts(arch: Architecture): { wide: Layout; narrow: Layout } {
 
    const wideW = 1000;
    const wideH = maxLane > 0 ? 300 : 160;
-   const nodeW = 160;
+   const nodeW = 170;
    const nodeH = 58;
    const wide: Layout = {
       width: wideW,
@@ -42,22 +42,29 @@ function layouts(arch: Architecture): { wide: Layout; narrow: Layout } {
       },
    };
 
+   // The narrow layout can override a node's place (see ArchitectureNode.narrow)
+   const narrowPos = (n: ArchitectureNode) => n.narrow ?? { layer: n.layer, lane: n.lane };
+   const narrowLayers = Math.max(...arch.nodes.map((n) => narrowPos(n).layer)) + 1;
+   const narrowMaxLane = Math.max(...arch.nodes.map((n) => narrowPos(n).lane));
    const narrowW = 352;
    const rowH = 112;
    const nNodeW = 164;
    const nNodeH = 54;
    const narrow: Layout = {
       width: narrowW,
-      height: layers * rowH,
+      height: narrowLayers * rowH,
       nodeW: nNodeW,
       nodeH: nNodeH,
-      pos: (n) => ({
-         x:
-            maxLane > 0
-               ? nNodeW / 2 + 6 + (n.lane * (narrowW - nNodeW - 12)) / maxLane
-               : narrowW / 2,
-         y: rowH / 2 + n.layer * rowH,
-      }),
+      pos: (n) => {
+         const { layer, lane } = narrowPos(n);
+         return {
+            x:
+               narrowMaxLane > 0
+                  ? nNodeW / 2 + 6 + (lane * (narrowW - nNodeW - 12)) / narrowMaxLane
+                  : narrowW / 2,
+            y: rowH / 2 + layer * rowH,
+         };
+      },
       edgePath: (a, b) => {
          const y1 = a.y + nNodeH / 2;
          const y2 = b.y - nNodeH / 2;

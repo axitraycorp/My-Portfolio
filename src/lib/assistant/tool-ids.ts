@@ -1,4 +1,4 @@
-import { metrics, projects, sections } from "@/content/profile";
+import { metrics, milestones, projects, sections } from "@/content/profile";
 import { makeToolSchemas, parseToolCallWith, type ToolCall } from "./tool-schemas";
 
 /* Server-side: the ids the assistant's tools may target, derived from profile.ts. */
@@ -13,7 +13,7 @@ export const HIGHLIGHT_IDS = [
    "architecture",
    "specs",
    "timeline",
-   ...[1, 2, 3, 4, 5, 6].map((n) => `milestone-${n}`),
+   ...milestones.map((m) => `milestone-${m.number}`),
    "metrics-table",
    ...metrics.map((m) => `metric-${m.id}`),
    ...projects.filter((p) => !p.flagship).map((p) => `project-${p.slug}`),

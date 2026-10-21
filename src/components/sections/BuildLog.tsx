@@ -12,8 +12,8 @@ export function BuildLog() {
                Build log
             </h2>
             <p className="section__lead">
-               Six milestones, built in the open. {done} of {milestones.length} complete — each one
-               ships with deliverables and a number to prove it.
+               {milestones.length} milestones, built in the open. {done} of {milestones.length}{" "}
+               complete — each one ships with deliverables and a number to prove it.
             </p>
 
             <div id="timeline" className="timeline mt-xl">
