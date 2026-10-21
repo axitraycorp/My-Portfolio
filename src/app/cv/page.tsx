@@ -33,10 +33,10 @@ export default function CvPage() {
    const flagship = projects.find((p) => p.flagship);
    const side = projects.filter((p) => !p.flagship);
    const facts = [
-      publicText(recruiter.availability),
-      publicText(recruiter.workRights),
-      publicList(recruiter.openTo).join(", ") || null,
-   ].filter((f): f is string => f !== null);
+      ["Availability", publicText(recruiter.availability)],
+      ["Work rights", publicText(recruiter.workRights)],
+      ["Open to", publicList(recruiter.openTo).join(", ") || null],
+   ].filter((f): f is [string, string] => f[1] !== null);
 
    return (
       <div className="cv-page px-gutter py-xl">
@@ -50,6 +50,9 @@ export default function CvPage() {
          <article className="cv mx-auto max-w-[52rem]" aria-label={`CV of ${profile.name}`}>
             <header className="cv__header">
                <h1 className="cv__name">{profile.name}</h1>
+               {profile.legalName !== profile.name && (
+                  <p className="cv__legal">Legal name: {profile.legalName}</p>
+               )}
                <p className="cv__title">{profile.title}</p>
                <ul className="cv__contact">
                   <li>
@@ -77,10 +80,18 @@ export default function CvPage() {
             <section className="cv__section" aria-labelledby="cv-summary">
                <h2 id="cv-summary">Summary</h2>
                <p>{recruiter.summary}</p>
-               <p className="cv__meta">
-                  <strong>Target roles:</strong> {recruiter.targetRoles.join(" · ")}
-                  {facts.length > 0 && <> — {facts.join(" · ")}</>}
-               </p>
+               <dl className="cv__facts">
+                  <div>
+                     <dt>Target roles</dt>
+                     <dd>{recruiter.targetRoles.join(" · ")}</dd>
+                  </div>
+                  {facts.map(([label, value]) => (
+                     <div key={label}>
+                        <dt>{label}</dt>
+                        <dd>{value}</dd>
+                     </div>
+                  ))}
+               </dl>
             </section>
 
             <section className="cv__section" aria-labelledby="cv-skills">
@@ -93,43 +104,6 @@ export default function CvPage() {
                      </div>
                   ))}
                </dl>
-            </section>
-
-            <section className="cv__section" aria-labelledby="cv-projects">
-               <h2 id="cv-projects">Projects</h2>
-               {flagship && (
-                  <div className="cv__item">
-                     <div className="cv__item-head">
-                        <h3>{flagship.title}</h3>
-                        <span>
-                           {STATUS[flagship.status]}
-                           {current && ` · milestone ${current.number} of ${milestones.length}`}
-                        </span>
-                     </div>
-                     <p>{flagship.summary}</p>
-                     <ul>
-                        {flagship.approach.slice(0, 4).map((a) => (
-                           <li key={a}>{a}</li>
-                        ))}
-                     </ul>
-                     <p className="cv__meta">
-                        <strong>Stack:</strong> {flagship.stack.join(", ")} ·{" "}
-                        <a href={`${siteConfig.url}/projects/${flagship.slug}`}>build log</a>
-                     </p>
-                  </div>
-               )}
-               {side.map((p) => (
-                  <div key={p.slug} className="cv__item">
-                     <div className="cv__item-head">
-                        <h3>{p.title}</h3>
-                        <span>{STATUS[p.status]}</span>
-                     </div>
-                     <p>{p.summary}</p>
-                     <p className="cv__meta">
-                        <strong>Stack:</strong> {p.stack.join(", ")}
-                     </p>
-                  </div>
-               ))}
             </section>
 
             <section className="cv__section" aria-labelledby="cv-experience">
@@ -187,6 +161,42 @@ export default function CvPage() {
                      </div>
                   );
                })}
+            </section>
+            <section className="cv__section" aria-labelledby="cv-projects">
+               <h2 id="cv-projects">Projects</h2>
+               {flagship && (
+                  <div className="cv__item">
+                     <div className="cv__item-head">
+                        <h3>{flagship.title}</h3>
+                        <span>
+                           {STATUS[flagship.status]}
+                           {current && ` · milestone ${current.number} of ${milestones.length}`}
+                        </span>
+                     </div>
+                     <p>{flagship.summary}</p>
+                     <ul>
+                        {flagship.approach.slice(0, 3).map((a) => (
+                           <li key={a}>{a}</li>
+                        ))}
+                     </ul>
+                     <p className="cv__meta">
+                        <strong>Stack:</strong> {flagship.stack.join(", ")} ·{" "}
+                        <a href={`${siteConfig.url}/projects/${flagship.slug}`}>build log</a>
+                     </p>
+                  </div>
+               )}
+               {side.map((p) => (
+                  <div key={p.slug} className="cv__item">
+                     <div className="cv__item-head">
+                        <h3>{p.title}</h3>
+                        <span>{STATUS[p.status]}</span>
+                     </div>
+                     <p>{p.summary}</p>
+                     <p className="cv__meta">
+                        <strong>Stack:</strong> {p.stack.join(", ")}
+                     </p>
+                  </div>
+               ))}
             </section>
          </article>
       </div>

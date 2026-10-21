@@ -35,7 +35,8 @@ export function buildFacts(c: PortfolioContent): string {
 
    lines.push(
       "## Owner",
-      `Name: ${value(profile.name)}`,
+      `Name: ${value(profile.name)} (preferred name)`,
+      `Legal name: ${value(profile.legalName)}`,
       `Title: ${profile.title}`,
       `Thesis: ${profile.thesis}`,
       `Location: ${value(profile.location)}`,

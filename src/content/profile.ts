@@ -21,7 +21,10 @@ export type Status = "done" | "active" | "planned";
 export type Channel = "camera" | "radar" | "fused" | "neutral";
 
 export interface Profile {
+   /** Preferred name, shown everywhere on the site. */
    name: string;
+   /** Legal name, shown on the CV so it matches visa and ID documents. */
+   legalName: string;
    title: string;
    tagline: string;
    /** One-line thesis shown in the hero. */
@@ -179,31 +182,36 @@ export interface RecruiterSummary {
 // ─── Profile ────────────────────────────────────────────────────────────────
 
 export const recruiter: RecruiterSummary = {
-   // Derived from the site title; confirm or edit to match the roles you apply for
    targetRoles: [
+      "Web Developer",
+      "AI Developer",
       "Robotics Software Engineer",
       "Perception / Edge AI Engineer",
       "Machine Learning Engineer",
+      "Automation Programmer",
    ],
    availability: "TODO: e.g. Available now / notice period",
-   workRights: "TODO: e.g. citizenship or visa / work rights",
-   openTo: ["Full-time", "TODO: e.g. Hybrid, Remote, Relocation"],
+   workRights:
+      "Full work rights in Australia — Temporary Graduate visa (subclass 485), valid until 31 Aug 2029",
+   openTo: ["Full-time", "Relocation anywhere for the right opportunity"],
    highlights: [
       "Master of Data Science (2024)",
-      "Hotel Manager 2024–2026: ran a 24/7 operation — people, budgets, incidents",
+      "Hotel Manager: lifted Rosehill Hotel's gaming ranking (AHA & MAX) from Sydney's top 20–30 to the top 10",
       "Building a camera–radar perception arm on an NVIDIA Jetson, in public",
+      "Built this site end to end: Next.js, NestJS, PostgreSQL and a Claude-powered AI guide",
    ],
    summary:
-      "Robotics and edge-AI engineer with a Master of Data Science and two years managing a 24/7 hotel operation. Currently building a camera–radar perception arm on an NVIDIA Jetson Orin Nano with ROS 2, TensorRT and MoveIt 2, documented as an open build log with measured results. Brings the operational discipline of hospitality — reliability, calm incident handling, clear communication — to engineering work.",
+      "Robotics, AI and web developer with a Master of Data Science and two years managing 24/7 hotel operations in Sydney — including lifting Rosehill Hotel's gaming ranking on the AHA and MAX systems from the top 20–30 to the top 10. Currently building a camera–radar perception arm on an NVIDIA Jetson Orin Nano with ROS 2, TensorRT and MoveIt 2, documented as an open build log with measured results. Also builds full-stack web applications — this portfolio is a Next.js and NestJS app with a PostgreSQL backend and a Claude-powered AI guide. Brings the operational discipline of hospitality — reliability, calm incident handling, clear communication — to engineering work.",
 };
 
 export const profile: Profile = {
-   name: "Hagon", // TODO: confirm display name (e.g. full name)
+   name: "Hagon Nguyen",
+   legalName: "Viet Hoang Nguyen",
    title: "Robotics & Edge AI Engineer",
    tagline: "From running a hotel to building robots that see.",
    thesis:
       "I build robot perception that runs on the edge — camera and radar, fused on a Jetson, driving a real arm.",
-   location: "TODO: city, country",
+   location: "Sydney, NSW, Australia",
    email: "axitray@gmail.com",
    links: {
       github: "https://github.com/axitraycorp",
@@ -215,9 +223,9 @@ export const profile: Profile = {
 export const education: Education[] = [
    {
       degree: "Master of Data Science",
-      institution: "TODO: university name",
+      institution: "Macquarie University",
       year: 2024,
-      location: "TODO: city, country",
+      location: "Sydney, NSW",
       highlights: [
          "TODO: thesis or capstone topic",
          "TODO: notable coursework (e.g. deep learning, time series)",
@@ -228,16 +236,16 @@ export const education: Education[] = [
 export const experience: Experience[] = [
    {
       role: "Hotel Manager",
-      organisation: "TODO: hotel name",
-      location: "TODO: city, country",
+      organisation: "Rosehill Hotel · The Vauxhall Inn",
+      location: "Sydney, NSW",
       start: 2024,
       end: 2026,
       summary:
          "Ran day-to-day operations of a 24/7 business: people, guests, budgets and incidents — the same pressures a robot in the field faces.",
       achievements: [
+         "Rosehill Hotel: lifted the venue's gaming ranking on the AHA and MAX systems from the top 20–30 to the top 10 in Sydney",
+         "The Vauxhall Inn: now applying the same approach to improve the venue's gaming rankings",
          "TODO: team size and departments led (e.g. front office, housekeeping, F&B)",
-         "TODO: a measurable operational win (e.g. reduced check-in time by X%)",
-         "TODO: a revenue or occupancy result (e.g. RevPAR up X% year on year)",
          "TODO: a process or system you introduced (e.g. new PMS workflow, SOPs)",
       ],
    },

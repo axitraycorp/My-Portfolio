@@ -79,7 +79,15 @@ describe("buildFacts", () => {
       const facts = buildFacts(base);
       expect(facts).toContain("NVIDIA Jetson Orin Nano");
       expect(facts).not.toContain("4 GB or 8 GB");
-      expect(facts).toContain("Achievements:\n  - (not provided)");
+      expect(facts).not.toContain("team size and departments led");
+   });
+
+   it("says '(not provided)' when every item in a list is a TODO", () => {
+      const experience = content.experience.map((job) => ({
+         ...job,
+         achievements: ["TODO: first", "TODO: second"],
+      }));
+      expect(buildFacts({ ...base, experience })).toContain("Achievements:\n  - (not provided)");
    });
 
    it("uses real values once TODOs are filled in", () => {

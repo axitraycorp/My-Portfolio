@@ -87,13 +87,26 @@ export function HeroFallback() {
             />
             <rect x="302" y="290" width="54" height="44" style={fused} />
          </g>
+         {/* textLength keeps each label inside its tag whatever monospace font loads */}
          <g fontFamily="var(--font-mono), monospace" fontSize="10">
-            <rect x="258" y="206" width="104" height="14" style={{ fill: "var(--fused)" }} />
-            <text x="262" y="216" style={{ fill: "var(--on-accent)" }}>
+            <rect x="258" y="206" width="112" height="14" style={{ fill: "var(--fused)" }} />
+            <text
+               x="262"
+               y="216"
+               textLength="104"
+               lengthAdjust="spacingAndGlyphs"
+               style={{ fill: "var(--on-accent)" }}
+            >
                cup 0.91 · 0.82 m
             </text>
-            <rect x="302" y="276" width="96" height="14" style={{ fill: "var(--fused)" }} />
-            <text x="306" y="286" style={{ fill: "var(--on-accent)" }}>
+            <rect x="284" y="276" width="112" height="14" style={{ fill: "var(--fused)" }} />
+            <text
+               x="288"
+               y="286"
+               textLength="104"
+               lengthAdjust="spacingAndGlyphs"
+               style={{ fill: "var(--on-accent)" }}
+            >
                box 0.87 · 1.10 m
             </text>
          </g>

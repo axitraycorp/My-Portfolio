@@ -60,6 +60,7 @@ function personJsonLd() {
       "@context": "https://schema.org",
       "@type": "Person",
       name: profile.name,
+      alternateName: profile.legalName,
       jobTitle: profile.title,
       description: profile.thesis,
       url: siteConfig.url,
