@@ -343,7 +343,7 @@ export const projects: Project[] = [
          "Run end to end — find an object, drive to it, pick it up and deliver it — and measure success over 50 trials.",
       ],
       stack: [
-         "ROS 2",
+         "ROS 2 Humble",
          "NVIDIA Jetson Orin Nano",
          "TensorRT",
          "YOLO",
@@ -367,7 +367,7 @@ export const projects: Project[] = [
          {
             id: "compute",
             label: "Compute",
-            value: "NVIDIA Jetson Orin Nano (TODO: 4 GB or 8 GB) — upgraded from the kit's Raspberry Pi 5",
+            value: "NVIDIA Jetson Orin Nano 8 GB — upgraded from the kit's Raspberry Pi 5",
             channel: "neutral",
          },
          {
@@ -397,7 +397,7 @@ export const projects: Project[] = [
          {
             id: "middleware",
             label: "Software",
-            value: "ROS 2 (TODO: distro) · TensorRT · Nav2 · MoveIt 2",
+            value: "ROS 2 Humble · TensorRT · Nav2 · MoveIt 2",
             channel: "fused",
          },
       ],
@@ -568,7 +568,7 @@ export const milestones: Milestone[] = [
          "The kit moved from its Raspberry Pi 5 to a Jetson Orin Nano, with the base, arm and every sensor talking ROS 2.",
       status: "active",
       deliverables: [
-         "Jetson Orin Nano installed in place of the Raspberry Pi 5, flashed with JetPack and ROS 2",
+         "Jetson Orin Nano installed in place of the Raspberry Pi 5, flashed with JetPack and ROS 2 Humble",
          "Base and arm driven through the RRC Lite controller: wheel odometry, IMU, servo joint states",
          "Depth camera and TOF LiDAR publishing on ROS 2 topics",
          "URDF and TF tree for chassis, arm, camera and LiDAR",
