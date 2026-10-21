@@ -367,31 +367,31 @@ export const projects: Project[] = [
          {
             id: "compute",
             label: "Compute",
-            value: "NVIDIA Jetson Orin Nano 8 GB — upgraded from the kit's Raspberry Pi 5",
+            value: "NVIDIA Jetson Orin Nano 8 GB — upgraded from the kit's Raspberry Pi 5 · RRC Lite motor/servo controller",
             channel: "neutral",
          },
          {
             id: "base",
             label: "Mobile base",
-            value: "Mecanum chassis, 212 × 174 mm · 4 encoder geared motors, 65 mm wheels · 7.4 V LiPo",
+            value: "Mecanum, anodised aluminium · 212 × 174 × 441 mm, 1.79 kg · 4 × 310 geared motors with quadrature encoders · 7.4 V 2200 mAh LiPo (~60 min)",
             channel: "neutral",
          },
          {
             id: "arm",
             label: "Arm",
-            value: "Servo arm with gripper on a rotating turret · links 74 / 74 / 140 mm",
+            value: "HX-06L smart bus servos, gripper on a rotating turret · links 74 / 74 / 140 mm",
             channel: "neutral",
          },
          {
             id: "camera",
             label: "Camera",
-            value: "3D depth camera (RGB + depth), wrist-mounted",
+            value: "Aurora930 Pro 3D depth camera (RGB + depth), wrist-mounted",
             channel: "camera",
          },
          {
             id: "lidar",
             label: "LiDAR",
-            value: "TOF LiDAR on the chassis, for SLAM and obstacle avoidance",
+            value: "MS200 TOF LiDAR on the chassis, for SLAM and obstacle avoidance",
             channel: "lidar",
          },
          {
