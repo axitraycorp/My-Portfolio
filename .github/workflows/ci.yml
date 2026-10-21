@@ -33,7 +33,8 @@ jobs:
 
       - name: No TODO placeholders shipped to the browser
         run: |
-          if grep -rl "TODO:" .next/static .next/server/app --include=*.js --include=*.html --include=*.rsc; then
+          # Client JS and prerendered pages only; server-only code (the assistant route) may read profile.ts
+          if grep -rl "TODO:" .next/static --include=*.js || grep -rl "TODO:" .next/server/app --include=*.html --include=*.rsc; then
             echo "::error::profile.ts TODO placeholders leaked into the client bundle or prerendered pages"
             exit 1
           fi

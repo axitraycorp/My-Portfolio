@@ -160,7 +160,42 @@ export interface TourStep {
    highlight?: string;
 }
 
+/** What a recruiter needs in ten seconds. TODO fields are hidden until filled in. */
+export interface RecruiterSummary {
+   /** Roles being applied for. */
+   targetRoles: string[];
+   /** e.g. "Available now", "From March 2027". */
+   availability: string;
+   /** e.g. "Australian citizen", "Full work rights in the EU". */
+   workRights: string;
+   /** Work arrangements open to, e.g. "Full-time", "Hybrid", "Relocation". */
+   openTo: string[];
+   /** Three short, factual proof points. */
+   highlights: string[];
+   /** One-paragraph professional summary used on the CV. */
+   summary: string;
+}
+
 // ─── Profile ────────────────────────────────────────────────────────────────
+
+export const recruiter: RecruiterSummary = {
+   // Derived from the site title; confirm or edit to match the roles you apply for
+   targetRoles: [
+      "Robotics Software Engineer",
+      "Perception / Edge AI Engineer",
+      "Machine Learning Engineer",
+   ],
+   availability: "TODO: e.g. Available now / notice period",
+   workRights: "TODO: e.g. citizenship or visa / work rights",
+   openTo: ["Full-time", "TODO: e.g. Hybrid, Remote, Relocation"],
+   highlights: [
+      "Master of Data Science (2024)",
+      "Hotel Manager 2024–2026: ran a 24/7 operation — people, budgets, incidents",
+      "Building a camera–radar perception arm on an NVIDIA Jetson, in public",
+   ],
+   summary:
+      "Robotics and edge-AI engineer with a Master of Data Science and two years managing a 24/7 hotel operation. Currently building a camera–radar perception arm on an NVIDIA Jetson Orin Nano with ROS 2, TensorRT and MoveIt 2, documented as an open build log with measured results. Brings the operational discipline of hospitality — reliability, calm incident handling, clear communication — to engineering work.",
+};
 
 export const profile: Profile = {
    name: "Hagon", // TODO: confirm display name (e.g. full name)

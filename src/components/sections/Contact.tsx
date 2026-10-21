@@ -1,4 +1,5 @@
-import { Download, Github, Linkedin } from "lucide-react";
+import Link from "next/link";
+import { Download, FileText, Github, Linkedin } from "lucide-react";
 import { profile } from "@/content/profile";
 import { HudFrame } from "@/components/hud/HudFrame";
 import { TopicLabel } from "@/components/hud/TopicLabel";
@@ -42,14 +43,15 @@ export function Contact() {
                      </a>
                   </li>
                   <li>
+                     {/* An uploaded PDF wins; otherwise the printable /cv page */}
                      {links.cv ? (
                         <a href={links.cv} download className="btn btn-ghost">
                            <Download className="size-4" aria-hidden="true" /> Download CV
                         </a>
                      ) : (
-                        <span className="btn btn-ghost" aria-disabled="true" title="CV coming soon">
-                           <Download className="size-4" aria-hidden="true" /> CV coming soon
-                        </span>
+                        <Link href="/cv" className="btn btn-ghost">
+                           <FileText className="size-4" aria-hidden="true" /> View CV
+                        </Link>
                      )}
                   </li>
                </ul>

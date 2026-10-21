@@ -18,9 +18,9 @@ export function Hero() {
          aria-labelledby="hero-title"
          className="hero relative overflow-hidden px-gutter"
       >
-         <BootSequence />
          <div className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-content items-center gap-xl py-xl md:grid-cols-[1.05fr_1fr] md:py-2xl">
-            <div className="hero-reveal flex flex-col gap-m">
+            {/* Text stays readable from first paint (it is the LCP); only the sensor view boots */}
+            <div className="hero-rise flex flex-col gap-m">
                <TopicLabel topic="/unit-7/boot" channel="fused">
                   perception online
                </TopicLabel>
@@ -46,9 +46,12 @@ export function Hero() {
                </p>
             </div>
 
-            <div className="hero-reveal hero-reveal--late relative aspect-square w-full max-w-[560px] justify-self-center overflow-hidden">
-               <HeroFallback />
-               <HeroSceneLoader />
+            <div className="relative aspect-square w-full max-w-[560px] justify-self-center overflow-hidden">
+               <div className="hero-reveal absolute inset-0">
+                  <HeroFallback />
+                  <HeroSceneLoader />
+               </div>
+               <BootSequence />
                {/* Brackets drawn above the (opaque) canvas */}
                <HudFrame channel="camera" className="pointer-events-none absolute inset-0 z-[1]" />
             </div>

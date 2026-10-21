@@ -243,6 +243,9 @@
       padding-block: var(--space-section);
       padding-inline: var(--gutter);
       border-top: 1px solid var(--line);
+      /* Skip style/layout/paint (and pause animations) for off-screen sections */
+      content-visibility: auto;
+      contain-intrinsic-size: auto 1000px;
    }
    .section__inner {
       width: 100%;

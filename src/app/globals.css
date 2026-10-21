@@ -3,6 +3,7 @@
 @import "../styles/hud.css";
 @import "../styles/effects.css";
 @import "../styles/assistant.css";
+@import "../styles/cv.css";
 
 /* `dark:` follows the resolved theme attribute, not the OS setting */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));

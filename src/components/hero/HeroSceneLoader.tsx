@@ -42,10 +42,14 @@ export function HeroSceneLoader() {
    const [ready, setReady] = useState(false);
 
    useEffect(() => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !supportsWebGL()) return;
-      setLowPower(isLowPower());
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const low = isLowPower();
+      setLowPower(low);
 
-      const start = () => setEnabled(true);
+      // Creating a WebGL context is expensive, so only probe when about to mount
+      const start = () => {
+         if (supportsWebGL()) setEnabled(true);
+      };
       let idleId: number | undefined;
       let timeoutId: number | undefined;
       const schedule = () => {
@@ -53,10 +57,24 @@ export function HeroSceneLoader() {
             idleId = window.requestIdleCallback(start, { timeout: 2500 });
          else timeoutId = window.setTimeout(start, 1200);
       };
-      if (document.readyState === "complete") schedule();
+
+      // Phones and low-power devices fetch three.js only once the visitor
+      // interacts, so parsing it never competes with the first render.
+      const INTERACTION = ["pointerdown", "touchstart", "scroll", "keydown"] as const;
+      const onInteract = () => {
+         INTERACTION.forEach((e) => window.removeEventListener(e, onInteract));
+         schedule();
+      };
+
+      if (low) {
+         INTERACTION.forEach((e) =>
+            window.addEventListener(e, onInteract, { passive: true, once: true })
+         );
+      } else if (document.readyState === "complete") schedule();
       else window.addEventListener("load", schedule, { once: true });
 
       return () => {
+         INTERACTION.forEach((e) => window.removeEventListener(e, onInteract));
          window.removeEventListener("load", schedule);
          if (idleId !== undefined) window.cancelIdleCallback(idleId);
          if (timeoutId !== undefined) window.clearTimeout(timeoutId);

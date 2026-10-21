@@ -9,6 +9,7 @@ export const METRIC_IDS = metrics.map((m) => m.id) as [string, ...string[]];
 
 /** Element ids the assistant may draw a bounding box around. */
 export const HIGHLIGHT_IDS = [
+   "at-a-glance",
    "architecture",
    "specs",
    "timeline",

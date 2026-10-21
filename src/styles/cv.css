@@ -1,0 +1,194 @@
+/* /cv — document-style résumé, designed to print to a clean PDF. */
+
+.cv {
+   padding: var(--space-l);
+   border: 1px solid var(--line);
+   border-radius: var(--radius);
+   background: var(--surface);
+   color: var(--ink);
+   font-size: var(--step--1);
+   line-height: 1.55;
+}
+@media (min-width: 640px) {
+   .cv {
+      padding: var(--space-xl);
+   }
+}
+.cv a {
+   color: inherit;
+   text-decoration: underline;
+   text-decoration-color: var(--line-strong);
+   text-underline-offset: 0.15em;
+}
+.cv__header {
+   padding-bottom: var(--space-m);
+   border-bottom: 2px solid var(--ink);
+}
+.cv__name {
+   font-size: var(--step-4);
+   font-weight: 600;
+   letter-spacing: -0.02em;
+}
+.cv__title {
+   margin-top: 0.15rem;
+   font-family: var(--font-display);
+   font-size: var(--step-1);
+   color: var(--camera);
+}
+.cv__contact {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 0.25rem 1rem;
+   margin-top: var(--space-xs);
+   font-family: var(--font-mono);
+   font-size: var(--step--2);
+   color: var(--muted);
+   overflow-wrap: anywhere;
+}
+.cv__section {
+   padding-top: var(--space-m);
+}
+.cv__section h2 {
+   margin-bottom: var(--space-xs);
+   font-family: var(--font-mono);
+   font-size: var(--step--2);
+   font-weight: 500;
+   letter-spacing: 0.12em;
+   text-transform: uppercase;
+   color: var(--muted);
+   border-bottom: 1px solid var(--line);
+   padding-bottom: 0.25rem;
+}
+.cv__meta {
+   margin-top: 0.35rem;
+   color: var(--muted);
+}
+.cv__meta strong {
+   color: var(--ink);
+   font-weight: 600;
+}
+.cv__skills {
+   display: grid;
+   gap: 0.3rem;
+}
+.cv__skills > div {
+   display: grid;
+   grid-template-columns: 1fr;
+   gap: 0 1rem;
+}
+@media (min-width: 640px) {
+   .cv__skills > div {
+      grid-template-columns: 11rem 1fr;
+   }
+}
+.cv__skills dt {
+   font-weight: 600;
+}
+.cv__item + .cv__item {
+   margin-top: var(--space-s);
+}
+.cv__item-head {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: baseline;
+   justify-content: space-between;
+   gap: 0 1rem;
+}
+.cv__item-head h3 {
+   font-family: var(--font-display);
+   font-size: var(--step-0);
+   font-weight: 600;
+}
+.cv__item-head > span {
+   font-family: var(--font-mono);
+   font-size: var(--step--2);
+   color: var(--muted);
+}
+.cv__org {
+   font-weight: 400;
+   color: var(--muted);
+}
+.cv__item p {
+   margin-top: 0.2rem;
+}
+.cv__item ul {
+   margin-top: 0.3rem;
+   padding-left: 1.1rem;
+   list-style: disc;
+}
+.cv__item li + li {
+   margin-top: 0.15rem;
+}
+
+@media print {
+   @page {
+      size: A4;
+      margin: 14mm 14mm 12mm;
+   }
+
+   /* Paper is always black on white, whatever the site theme */
+   :root,
+   [data-theme] {
+      /* color-scheme: dark would paint the page margins dark */
+      color-scheme: light;
+      --background: #fff;
+      --surface: #fff;
+      --ink: #111;
+      --muted: #444;
+      --line: #ccc;
+      --line-strong: #999;
+      --camera: #0b5f73;
+   }
+   html,
+   body {
+      background: #fff !important;
+      color: #111 !important;
+   }
+
+   body > header,
+   body > footer,
+   .skip-link,
+   .assistant-launcher,
+   .assistant-panel,
+   .spotlight,
+   .cv-toolbar {
+      display: none !important;
+   }
+
+   .cv-page {
+      padding: 0 !important;
+   }
+   .cv {
+      border: 0;
+      padding: 0;
+      max-width: none;
+      font-size: 10pt;
+      line-height: 1.4;
+   }
+   .cv__name {
+      font-size: 22pt;
+   }
+   .cv__title {
+      font-size: 12pt;
+   }
+   .cv__contact {
+      font-size: 8.5pt;
+   }
+   .cv__section {
+      padding-top: 9pt;
+      break-inside: auto;
+   }
+   .cv__section h2 {
+      font-size: 8.5pt;
+      break-after: avoid;
+   }
+   .cv__item {
+      break-inside: avoid;
+   }
+   .cv__skills > div {
+      grid-template-columns: 10rem 1fr;
+   }
+   .cv a {
+      text-decoration: none;
+   }
+}

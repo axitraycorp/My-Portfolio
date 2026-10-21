@@ -51,6 +51,13 @@ describe("buildSystemPrompt", () => {
       expect(prompt).toContain("robot (Robot)");
    });
 
+   it("gives recruiters' questions real answers and hides unfilled ones", () => {
+      expect(prompt).toContain("## For recruiters");
+      for (const role of content.recruiter.targetRoles) expect(prompt).toContain(role);
+      expect(prompt).toContain("Availability: (not provided)");
+      expect(prompt).toContain("/cv");
+   });
+
    it("is deterministic so it can be prompt-cached", () => {
       expect(buildSystemPrompt()).toBe(prompt);
    });

@@ -44,7 +44,7 @@ export function BuildLog() {
                            </summary>
                            <div className="timeline__details">
                               <div>
-                                 <h4 className="mono-caps mb-2xs">Deliverables</h4>
+                                 <h3 className="mono-caps mb-2xs">Deliverables</h3>
                                  <ul className="timeline__list">
                                     {m.deliverables.map((d) => (
                                        <li key={d}>{d}</li>
@@ -53,7 +53,7 @@ export function BuildLog() {
                               </div>
                               {m.metrics.length > 0 && (
                                  <div>
-                                    <h4 className="mono-caps mb-2xs">Metrics</h4>
+                                    <h3 className="mono-caps mb-2xs">Metrics</h3>
                                     <ul className="timeline__list">
                                        {m.metrics.map((id) => {
                                           const metric = getMetric(id);

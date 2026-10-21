@@ -14,6 +14,7 @@ export type PortfolioContent = Pick<
    | "milestones"
    | "metrics"
    | "sections"
+   | "recruiter"
 >;
 
 const NOT_PROVIDED = "(not provided)";
@@ -41,7 +42,16 @@ export function buildFacts(c: PortfolioContent): string {
       `Email: ${profile.email}`,
       `GitHub: ${profile.links.github}`,
       `LinkedIn: ${profile.links.linkedin}`,
-      `CV: ${profile.links.cv ? "available on the site" : NOT_PROVIDED}`,
+      `CV: a printable CV is at /cv on this site${profile.links.cv ? " (PDF download also available)" : ""}`,
+      "",
+      "## For recruiters",
+      `Target roles: ${c.recruiter.targetRoles.join(", ")}`,
+      `Availability: ${value(c.recruiter.availability)}`,
+      `Work rights: ${value(c.recruiter.workRights)}`,
+      `Open to: ${publicList(c.recruiter.openTo).join(", ") || NOT_PROVIDED}`,
+      `Summary: ${c.recruiter.summary}`,
+      "Highlights:",
+      bullets(c.recruiter.highlights),
       "",
       "## Story",
       ...c.aboutStory.map((p) => `- ${p}`),
