@@ -3,19 +3,22 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { cablesFor, connectedPorts } from "../assembly/cables";
 import { analyse } from "../engine";
 import { ENVIRONMENTS, runEnvironment } from "../engine/environments";
 import { getArchetype, templateFor } from "../model/archetypes";
-import type { ArchetypeId, Build, Issue, PartInstance } from "../model/types";
+import type { ArchetypeId, Build, Issue, PartInstance, PortRef } from "../model/types";
 import { parseBuild } from "../model/validation";
+import { scratchBuild } from "../guide/steps";
 import { AdvisorPanel } from "./AdvisorPanel";
+import { GuidePanel, type GuideActions } from "./GuidePanel";
 import { IssuesPanel } from "./IssuesPanel";
 import { PartsPanel } from "./PartsPanel";
 import { PowerPanel } from "./PowerPanel";
 import { SceneView } from "./SceneView";
 import { TestsPanel } from "./TestsPanel";
 import { WiringPanel } from "./WiringPanel";
-import { nextId, parseRef } from "./ports";
+import { nextId, parseRef, refValue } from "./ports";
 import { postJson, useLabUser } from "./useLabUser";
 
 // The plan (drawings, bring-up analysis) loads only when its tab opens
@@ -34,10 +37,20 @@ const TABS: { id: Tab; label: string }[] = [
    { id: "advisor", label: "AI advisor" },
 ];
 
-type Props = { archetype: ArchetypeId; savedId?: string };
+type Props = {
+   archetype: ArchetypeId;
+   savedId?: string;
+   /** Start with only the frame. */
+   scratch?: boolean;
+   /** Open with Unit-7's guide beside the 3D view. */
+   guide?: boolean;
+};
 
-export function Workbench({ archetype, savedId: initialId }: Props) {
-   const [build, setBuild] = useState<Build>(() => templateFor(archetype));
+export function Workbench({ archetype, savedId: initialId, scratch = false, guide = false }: Props) {
+   const [build, setBuild] = useState<Build>(() => (scratch ? scratchBuild(archetype) : templateFor(archetype)));
+   const [side, setSide] = useState<"guide" | "tests">(guide || scratch ? "guide" : "tests");
+   const [guideHighlight, setGuideHighlight] = useState<string[]>([]);
+   const [planSeen, setPlanSeen] = useState(false);
    const [savedId, setSavedId] = useState<string | null>(initialId ?? null);
    const [loadState, setLoadState] = useState<"ready" | "loading" | "missing">(initialId ? "loading" : "ready");
    const [dirty, setDirty] = useState(false);
@@ -66,10 +79,19 @@ export function Workbench({ archetype, savedId: initialId }: Props) {
    const analysis = useMemo(() => analyse(build), [build]);
    const results = useMemo(() => ENVIRONMENTS.map((e) => runEnvironment(analysis, e)), [analysis]);
    const { report } = analysis;
+   const cables = useMemo(() => cablesFor(build, analysis), [build, analysis]);
+   const connected = useMemo(() => connectedPorts(build), [build]);
    const arche = getArchetype(build.archetype);
    const env = ENVIRONMENTS.find((e) => e.id === envId) ?? ENVIRONMENTS[0];
    const envResult = results.find((r) => r.environmentId === env.id)!;
    const highlight = useMemo(() => new Set(activeIssue?.uids ?? []), [activeIssue]);
+   const sceneHighlight = useMemo(
+      () => [...new Set([...(activeIssue?.uids ?? []), ...(side === "guide" ? guideHighlight : [])])],
+      [activeIssue, guideHighlight, side],
+   );
+   useEffect(() => {
+      if (tab === "plan") setPlanSeen(true);
+   }, [tab]);
 
    const update = useCallback((fn: (b: Build) => Build) => {
       setBuild((b) => fn(b));
@@ -77,8 +99,8 @@ export function Workbench({ archetype, savedId: initialId }: Props) {
       setSaveMsg(null);
    }, []);
 
-   const addPart = (partId: string) =>
-      update((b) => ({ ...b, parts: [...b.parts, { uid: nextId("p", b.parts.map((p) => p.uid)), partId, count: 1 }] }));
+   const addPart = (partId: string, count = 1) =>
+      update((b) => ({ ...b, parts: [...b.parts, { uid: nextId("p", b.parts.map((p) => p.uid)), partId, count }] }));
    const removePart = (uid: string) => {
       update((b) => ({
          ...b,
@@ -102,6 +124,16 @@ export function Workbench({ archetype, savedId: initialId }: Props) {
          return { ...b, wires: [...b.wires, { id: nextId("w", b.wires.map((w) => w.id)), from: a, to: z }] };
       });
    const removeWire = (id: string) => update((b) => ({ ...b, wires: b.wires.filter((w) => w.id !== id) }));
+
+   const guideActions: GuideActions = {
+      addPart,
+      connect: (from: PortRef, to: PortRef) => addWire(refValue(from), refValue(to)),
+      openTab: (t) => {
+         setTab(t);
+         document.getElementById("build-details")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      },
+      highlight: useCallback((uids: string[]) => setGuideHighlight(uids), []),
+   };
 
    const reset = () => {
       if (dirty && !window.confirm("Replace this build with the starter configuration? Unsaved changes are lost.")) return;
@@ -268,12 +300,35 @@ export function Workbench({ archetype, savedId: initialId }: Props) {
                verdict={envResult.verdict}
                moving={envResult.verdict !== "fail"}
                robotName={build.name || arche?.name || "Robot"}
-               highlight={activeIssue?.uids}
+               highlight={sceneHighlight}
+               cables={cables}
+               connected={connected}
+               errors={report.counts.error}
             />
-            <TestsPanel results={results} envId={env.id} onSelect={setEnvId} />
+            <div className="flex flex-col gap-s">
+               <div className="flex gap-3xs" role="group" aria-label="Side panel">
+                  {(["guide", "tests"] as const).map((v) => (
+                     <button key={v} type="button" className="lab-btn-sm" aria-pressed={side === v} data-highlight={side === v ? "" : undefined} onClick={() => setSide(v)}>
+                        {v === "guide" ? "Unit-7 guide" : "Test environments"}
+                     </button>
+                  ))}
+               </div>
+               {side === "guide" ? (
+                  <GuidePanel
+                     build={build}
+                     analysis={analysis}
+                     planSeen={planSeen}
+                     actions={guideActions}
+                     user={account.user}
+                     onCreditUsed={() => void account.refresh()}
+                  />
+               ) : (
+                  <TestsPanel results={results} envId={env.id} onSelect={setEnvId} />
+               )}
+            </div>
          </div>
 
-         <section aria-label="Build details" className="flex flex-col gap-m">
+         <section id="build-details" aria-label="Build details" className="flex scroll-mt-20 flex-col gap-m">
             <div role="tablist" aria-label="Build details" className="lab-tabs">
                {TABS.map((t, i) => (
                   <button

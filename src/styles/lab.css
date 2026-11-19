@@ -177,3 +177,60 @@
       touch-action: pan-y;
    }
 }
+
+/* Unit-7 lab guide avatar: blinks, beacon pulses, mouth moves while talking */
+@layer components {
+   .unit7__eye {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: unit7-blink 5s infinite;
+   }
+   .unit7__beacon {
+      animation: unit7-pulse 2.4s ease-in-out infinite;
+   }
+   .unit7[data-talking] .unit7__mouth rect {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: unit7-talk 0.45s ease-in-out infinite alternate;
+   }
+   .lab-bubble {
+      position: relative;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface-raised);
+      padding: 0.75rem 0.9rem;
+   }
+   .lab-bubble::before {
+      content: "";
+      position: absolute;
+      top: 1.1rem;
+      left: -6px;
+      width: 10px;
+      height: 10px;
+      background: var(--surface-raised);
+      border-left: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line-strong);
+      transform: rotate(45deg);
+   }
+}
+
+@keyframes unit7-blink {
+   0%,
+   94%,
+   100% {
+      transform: scaleY(1);
+   }
+   96% {
+      transform: scaleY(0.1);
+   }
+}
+@keyframes unit7-pulse {
+   50% {
+      opacity: 0.35;
+   }
+}
+@keyframes unit7-talk {
+   to {
+      transform: scaleY(2.2);
+   }
+}

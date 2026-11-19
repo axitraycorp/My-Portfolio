@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
 
 test("the lab lists every robot type and opens a clean starter build", async ({ page }) => {
    await page.goto("/lab");
-   await expect(page.locator('a[href^="/lab/build?type="]')).toHaveCount(8);
+   await expect(page.getByRole("link", { name: /^Build a / })).toHaveCount(8);
    await page.getByRole("link", { name: "Build a hexapod spider" }).click();
    await expect(page).toHaveURL(/\/lab\/build\?type=hexapod/);
    const summary = page.getByRole("status", { name: "Check summary" });
@@ -30,6 +30,24 @@ test("switching environments shows that wheeled robots can't climb stairs", asyn
    await page.getByRole("button", { name: /Stairs/ }).click();
    await expect(page.locator("#env-title")).toContainText(/Stairs/);
    await expect(page.getByRole("button", { name: /Stairs/ })).toContainText("fail");
+});
+
+test("Unit-7 guides a robot arm from a bare frame to a working build", async ({ page }) => {
+   await page.goto("/lab/build?type=robot-arm&scratch=1&guide=1");
+   const guide = page.getByRole("region", { name: /Unit-7 · build guide/ });
+   await expect(guide).toContainText("Brain");
+   for (let i = 0; i < 40; i++) {
+      if (await guide.getByRole("button", { name: "Open the assembly plan" }).isVisible()) break;
+      const connectAll = guide.getByRole("button", { name: /^Connect all/ });
+      const recommended = guide.getByRole("listitem").filter({ hasText: "recommended" }).getByRole("button", { name: /^Add / });
+      const skip = guide.getByRole("button", { name: /Skip this step|That's enough/ });
+      if (await connectAll.isVisible()) await connectAll.click();
+      else if ((await recommended.count()) > 0) await recommended.first().click();
+      else if (await skip.isVisible()) await skip.click();
+      else break;
+   }
+   await expect(guide.getByRole("button", { name: "Open the assembly plan" })).toBeVisible();
+   await expect(page.getByRole("status", { name: "Check summary" })).toContainText("0 errors");
 });
 
 test("the assembly plan walks from frame to power-on tests", async ({ page }) => {
@@ -57,7 +75,7 @@ test("the plan tab has no WCAG A/AA violations", async ({ page }) => {
 });
 
 for (const theme of ["dark", "light"] as const) {
-   for (const path of ["/lab", "/lab/build?type=robot-dog", "/lab/login"]) {
+   for (const path of ["/lab", "/lab/build?type=robot-dog", "/lab/build?type=hexapod&scratch=1&guide=1", "/lab/login"]) {
       test(`${path} has no WCAG A/AA violations in the ${theme} theme`, async ({ page }) => {
          await page.addInitScript((t) => localStorage.setItem("theme", t), theme);
          await page.goto(path);

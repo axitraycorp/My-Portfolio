@@ -5,7 +5,7 @@ import { useContext, useRef } from "react";
 import type * as THREE from "three";
 import type { Vec3 } from "../../assembly/frames";
 import type { Layout, Placement } from "../../assembly/layout";
-import { Ghost, MotorBody, ServoBody, Stage, StageContext } from "./parts";
+import { Ghost, MotorBody, ServoBody, Stage, StageContext, useAnchor } from "./parts";
 
 /* Frame skeletons in mm. Actuators come from the layout, so the user's choice of
    motors and servos changes the model; empty slots show as orange outlines. */
@@ -64,10 +64,28 @@ export function Decks({ layout, standoffsFrom }: { layout: Layout; standoffsFrom
 /** A servo at a joint, or an outline if the joint has none. */
 function Joint({ servo, rot = [0, 0, 0], pos = [0, 0, 0] }: { servo: Placement | null; rot?: Vec3; pos?: Vec3 }) {
    const ctx = useContext(StageContext);
+   const anchor = useAnchor(servo?.key);
    return (
       <group position={pos} rotation={rot}>
          <Stage step="actuators" lift={70}>
-            {servo ? <ServoBody ph={servo.phys} glow={ctx.highlight.has(servo.uid)} /> : <Ghost size={[40, 40, 20]} />}
+            <group ref={anchor}>
+               {servo ? <ServoBody ph={servo.phys} glow={ctx.highlight.has(servo.uid)} /> : <Ghost size={[40, 40, 20]} />}
+            </group>
+         </Stage>
+      </group>
+   );
+}
+
+/** A drive motor at its frame anchor, registered for cables. */
+function MotorAt({ m, pos, side }: { m: Placement | null; pos: Vec3; side: 1 | -1 }) {
+   const ctx = useContext(StageContext);
+   const anchor = useAnchor(m?.key);
+   return (
+      <group position={pos} rotation-y={side > 0 ? 0 : Math.PI}>
+         <Stage step="actuators" lift={90}>
+            <group ref={anchor}>
+               {m ? <MotorBody ph={m.phys} glow={ctx.highlight.has(m.uid)} /> : <Ghost size={[25, 25, 70]} y={-12} />}
+            </group>
          </Stage>
       </group>
    );
@@ -113,7 +131,6 @@ export function Rover({ layout, t, moving }: RobotProps) {
    const geo = layout.geometry!;
    const wheels = useRef<(THREE.Group | null)[]>([]);
    const steer = useRef<(THREE.Group | null)[]>([]);
-   const ctx = useContext(StageContext);
    const [CL, CW, CT] = geo.chassis.size;
    const top = geo.chassis.topY;
    const R = geo.wheelRadius;
@@ -135,16 +152,9 @@ export function Rover({ layout, t, moving }: RobotProps) {
             ))}
          </Stage>
 
-         {geo.motorAnchors.map((a, i) => {
-            const m = layout.motors[i];
-            return (
-               <group key={i} position={a.pos} rotation-y={a.side > 0 ? 0 : Math.PI}>
-                  <Stage step="actuators" lift={90}>
-                     {m ? <MotorBody ph={m.phys} glow={ctx.highlight.has(m.uid)} /> : <Ghost size={[25, 25, 70]} y={-12} />}
-                  </Stage>
-               </group>
-            );
-         })}
+         {geo.motorAnchors.map((a, i) => (
+            <MotorAt key={i} m={layout.motors[i]} pos={a.pos} side={a.side} />
+         ))}
 
          {(kind === "rover" || kind === "mobile-arm") &&
             geo.motorAnchors.map((a, i) => (

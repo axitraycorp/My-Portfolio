@@ -8,7 +8,7 @@ import { getPart } from "../model/catalog";
 import type { Build } from "../model/types";
 import { PartDrawing } from "./PartDrawing";
 import { SceneView } from "./SceneView";
-import { sceneWires } from "./sceneWires";
+import { cablesFor, connectedPorts } from "../assembly/cables";
 
 type Props = { build: Build; analysis: Analysis };
 
@@ -123,10 +123,8 @@ export function PlanPanel({ build, analysis }: Props) {
    const [index, setIndex] = useState(0);
    const [replay, setReplay] = useState(0);
    const step = plan.steps[Math.min(index, plan.steps.length - 1)];
-   const wires = useMemo(() => {
-      const w = plan.steps.find((s) => s.kind === "wiring")?.wires ?? [];
-      return sceneWires(build, analysis.layout, w);
-   }, [plan, build, analysis.layout]);
+   const cables = useMemo(() => cablesFor(build, analysis), [build, analysis]);
+   const connected = useMemo(() => connectedPorts(build), [build]);
 
    const go = (i: number) => {
       setIndex(Math.max(0, Math.min(plan.steps.length - 1, i)));
@@ -145,7 +143,8 @@ export function PlanPanel({ build, analysis }: Props) {
                moving={false}
                robotName={build.name}
                assembly={{ stage: step.stage, replay, title: `${index + 1}. ${step.title}` }}
-               wires={wires}
+               cables={cables}
+               connected={connected}
             />
             <div className="flex flex-wrap items-center gap-2xs">
                <button type="button" className="btn btn-ghost" onClick={() => go(index - 1)} disabled={index === 0}>

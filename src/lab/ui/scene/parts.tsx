@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { createContext, useContext, useRef } from "react";
 import type * as THREE from "three";
 import { STEP_ORDER, type Placement, type StepId } from "../../assembly/layout";
+import { portOffsets } from "../../assembly/ports3d";
 import type { Physical } from "../../model/physical";
 
 /* Everything here is in millimetres; the robot root group scales by 0.001. */
@@ -18,6 +19,12 @@ export interface StageState {
    /** Seconds since start, for spinning fans and LiDAR. */
    time: React.RefObject<number>;
    spinning: boolean;
+   /** Placement key → the object its connectors are positioned in (for cables). */
+   anchors: Map<string, THREE.Object3D>;
+   /** "uid.port" keys that have a wire. */
+   connected: Set<string>;
+   /** Show connectors (wiring view). */
+   showPorts: boolean;
 }
 
 export const StageContext = createContext<StageState>({
@@ -26,7 +33,45 @@ export const StageContext = createContext<StageState>({
    highlight: new Set(),
    time: { current: 0 },
    spinning: false,
+   anchors: new Map(),
+   connected: new Set(),
+   showPorts: false,
 });
+
+/** Ref callback that records an object as the cable anchor for a placement. */
+export function useAnchor(key: string | undefined) {
+   const ctx = useContext(StageContext);
+   return (o: THREE.Object3D | null) => {
+      if (!key) return;
+      if (o) ctx.anchors.set(key, o);
+      else ctx.anchors.delete(key);
+   };
+}
+
+const PORT_COLOURS = { power: "rgb(225,60,60)", motor: "rgb(240,170,50)", data: "rgb(80,170,255)" };
+
+/** Small connector blocks where each port is: coloured when wired, grey when free. */
+export function Connectors({ p }: { p: Placement }) {
+   const ctx = useContext(StageContext);
+   if (!ctx.showPorts) return null;
+   const offsets = portOffsets(p.part, p.phys);
+   return (
+      <group>
+         {p.part.ports.map((port) => {
+            const at = offsets.get(port.id);
+            if (!at) return null;
+            const kind = port.kind === "motor" ? "motor" : port.kind === "data" ? "data" : "power";
+            const wired = ctx.connected.has(`${p.uid}.${port.id}`);
+            return (
+               <mesh key={port.id} position={at}>
+                  <boxGeometry args={[4, 3, 4]} />
+                  <meshStandardMaterial color={wired ? PORT_COLOURS[kind] : "rgb(90,92,100)"} emissive={wired ? PORT_COLOURS[kind] : "black"} emissiveIntensity={wired ? 0.35 : 0} />
+               </mesh>
+            );
+         })}
+      </group>
+   );
+}
 
 const ease = (t: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
 
@@ -115,7 +160,7 @@ function mat(colour: string, glow: boolean, extra: Partial<{ metalness: number; 
 }
 
 /** The body of a part in its own frame: origin at the centre of its mounting face. */
-export function PartBody({ ph, glow = false, front = false }: { ph: Physical; glow?: boolean; front?: boolean }) {
+export function PartBody({ ph, glow = false }: { ph: Physical; glow?: boolean }) {
    const [L, W, H] = ph.sizeMm;
    const base = ph.standoffMm ?? 0;
    switch (ph.shape) {
@@ -141,7 +186,7 @@ export function PartBody({ ph, glow = false, front = false }: { ph: Physical; gl
             </group>
          );
          return (
-            <group rotation-x={front ? -Math.PI / 2 : 0}>
+            <group>
                <Standoffs ph={ph} />
                {body}
             </group>
@@ -315,13 +360,18 @@ export function Placed({ p }: { p: Placement }) {
    const glow = ctx.highlight.has(p.uid);
    const front = p.zone === "front" && (p.phys.shape === "board" || p.phys.shape === "module");
    const top = (p.phys.standoffMm ?? 0) + 1.6;
+   const anchor = useAnchor(p.key);
    return (
       <Stage step={p.step} lift={p.zone === "bay" ? 90 : 140}>
          <group position={p.pos} rotation-y={p.rotY}>
-            <PartBody ph={p.phys} glow={glow} front={front} />
-            {!front && (p.phys.method === "standoffs" || p.phys.method === "carrier" || p.phys.method === "stack") && (
-               <Screws ph={p.phys} y={top} step={p.step} />
-            )}
+            {/* Front-mounted modules stand up with their top facing forward */}
+            <group rotation-x={front ? -Math.PI / 2 : 0} ref={anchor}>
+               <PartBody ph={p.phys} glow={glow} />
+               <Connectors p={p} />
+               {(p.phys.method === "standoffs" || p.phys.method === "carrier" || p.phys.method === "stack") && (
+                  <Screws ph={p.phys} y={top} step={p.step} />
+               )}
+            </group>
          </group>
       </Stage>
    );

@@ -21,6 +21,14 @@ describe("Navbar", () => {
       expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/#contact");
    });
 
+   it("links to the Robot Lab right after Projects", () => {
+      render(<Navbar name={profile.name} links={links} />);
+      const lab = screen.getByRole("link", { name: "Lab" });
+      expect(lab).toHaveAttribute("href", "/lab");
+      const all = screen.getAllByRole("link").map((l) => l.textContent);
+      expect(all.indexOf("Lab")).toBe(all.indexOf("Projects") + 1);
+   });
+
    it("has a theme toggle", () => {
       render(<Navbar name={profile.name} links={links} />);
       expect(

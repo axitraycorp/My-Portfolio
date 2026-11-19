@@ -10,12 +10,21 @@ export const metadata: Metadata = {
    robots: { index: false },
 };
 
-type Props = { searchParams: Promise<{ type?: string; id?: string }> };
+type Props = { searchParams: Promise<{ type?: string; id?: string; scratch?: string; guide?: string }> };
 
 export default async function BuildPage({ searchParams }: Props) {
-   const { type, id } = await searchParams;
+   const { type, id, scratch, guide } = await searchParams;
    const archetype = (ARCHETYPES.some((a) => a.id === type) ? type : "mecanum-rover") as ArchetypeId;
    const savedId = id && /^[0-9a-f-]{36}$/i.test(id) ? id : undefined;
    // Keyed so switching type or build remounts with fresh state
-   return <Workbench key={savedId ?? archetype} archetype={archetype} savedId={savedId} />;
+   const fromScratch = !savedId && scratch === "1";
+   return (
+      <Workbench
+         key={`${savedId ?? archetype}${fromScratch ? ":scratch" : ""}`}
+         archetype={archetype}
+         savedId={savedId}
+         scratch={fromScratch}
+         guide={guide === "1"}
+      />
+   );
 }

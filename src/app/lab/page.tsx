@@ -44,6 +44,15 @@ export default function LabPage() {
             <p className="font-mono text-small text-muted">
                {ARCHETYPES.length} robot types · {PARTS.length} parts · {ENVIRONMENTS.length} environments · runs in your browser
             </p>
+            <div className="lab-panel flex flex-wrap items-center gap-s p-s">
+               <p className="min-w-0 flex-1 text-small">
+                  <span className="font-medium">New to robotics?</span> Unit-7 walks you through building a robot from a bare frame — which parts,
+                  which port each wire goes to, and why — with every step shown in 3D.
+               </p>
+               <Link href="/lab/build?type=mecanum-rover&scratch=1&guide=1" className="btn btn-primary">
+                  Build your first robot
+               </Link>
+            </div>
             <LabAccountBar />
          </header>
 
@@ -62,6 +71,9 @@ export default function LabPage() {
                         </p>
                         <Link href={`/lab/build?type=${a.id}`} className="btn btn-ghost mt-2xs">
                            Build a {a.name.toLowerCase()}
+                        </Link>
+                        <Link href={`/lab/build?type=${a.id}&scratch=1&guide=1`} className="link text-center font-mono text-caption">
+                           From scratch with Unit-7 →
                         </Link>
                      </HudFrame>
                   </li>

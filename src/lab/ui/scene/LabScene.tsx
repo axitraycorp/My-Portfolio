@@ -1,23 +1,17 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, QuadraticBezierLine } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { useEffect, useMemo, useRef } from "react";
 import type * as THREE from "three";
-import type { Vec3 } from "../../assembly/frames";
+import type { Cable } from "../../assembly/cables";
 import { STEP_ORDER, type Layout, type StepId } from "../../assembly/layout";
 import type { Environment } from "../../engine/environments";
 import type { TestVerdict } from "../../model/types";
 import { Ground, poseAt, usePalette, type Palette } from "./environment";
+import { Cables } from "./Cables";
 import { Ghost, Placed, StageContext, type StageState } from "./parts";
 import { DesktopArm, Dog, Hexapod, Humanoid, Rover } from "./robots";
-
-export interface SceneWire {
-   id: string;
-   kind: "power" | "data" | "motor" | "invalid";
-   from: Vec3;
-   to: Vec3;
-}
 
 export type SceneProps = {
    layout: Layout;
@@ -28,16 +22,14 @@ export type SceneProps = {
    animate: boolean;
    /** Assembly mode: parts up to this step; the step's own parts move into place. */
    assembly?: { stage: StepId; replay: number } | null;
-   wires?: SceneWire[];
+   /** Physical cables, connector to connector. */
+   cables?: Cable[];
+   /** "uid.port" keys that are wired, for connector colours. */
+   connected?: Set<string>;
+   /** Draw cables and connectors outside assembly mode. */
+   showWiring?: boolean;
    highlight?: string[];
    onReady?: () => void;
-};
-
-const WIRE_COLOURS: Record<SceneWire["kind"], string> = {
-   power: "rgb(225,60,60)",
-   motor: "rgb(240,170,50)",
-   data: "rgb(80,170,255)",
-   invalid: "rgb(255,90,200)",
 };
 
 /** Height of the robot's highest point (mm), for the beacon and camera. */
@@ -74,7 +66,9 @@ function Robot({ layout, t, moving }: { layout: Layout; t: React.RefObject<numbe
    );
 }
 
-function World({ layout, scene, verdict, moving, animate, assembly, wires, highlight, p }: Omit<SceneProps, "onReady"> & { p: Palette }) {
+function World({ layout, scene, verdict, moving, animate, assembly, cables, connected, showWiring, highlight, p }: Omit<SceneProps, "onReady"> & { p: Palette }) {
+   const root = useRef<THREE.Group>(null);
+   const anchors = useMemo(() => new Map<string, THREE.Object3D>(), []);
    const t = useRef(0);
    const progress = useRef(1);
    const phase = useRef(0);
@@ -117,12 +111,15 @@ function World({ layout, scene, verdict, moving, animate, assembly, wires, highl
          highlight: new Set(highlight ?? []),
          time: t,
          spinning: animate && !building,
+         anchors,
+         connected: connected ?? new Set(),
+         showPorts: assembly ? STEP_ORDER.indexOf(assembly.stage) >= STEP_ORDER.indexOf("wiring") : Boolean(showWiring),
       }),
-      [assembly, highlight, animate, building],
+      [assembly, highlight, animate, building, anchors, connected, showWiring],
    );
 
    const beaconColour = verdict === "pass" ? p.success : verdict === "warn" ? p.lidar : p.warning;
-   const showWires = assembly && STEP_ORDER.indexOf(assembly.stage) >= STEP_ORDER.indexOf("wiring");
+   const wiringStage = assembly ? STEP_ORDER.indexOf(assembly.stage) >= STEP_ORDER.indexOf("wiring") : Boolean(showWiring);
 
    return (
       <>
@@ -133,13 +130,9 @@ function World({ layout, scene, verdict, moving, animate, assembly, wires, highl
          <Ground scene={building ? "bench" : scene} p={p} />
          <group ref={rig}>
             <StageContext.Provider value={ctx}>
-               <group scale={0.001}>
+               <group scale={0.001} ref={root}>
                   <Robot layout={layout} t={t} moving={building ? false : verdict !== "fail" && moving} />
-                  {showWires &&
-                     wires?.map((w) => {
-                        const mid: Vec3 = [(w.from[0] + w.to[0]) / 2, Math.max(w.from[1], w.to[1]) + 35, (w.from[2] + w.to[2]) / 2];
-                        return <QuadraticBezierLine key={w.id} start={w.from} end={w.to} mid={mid} color={WIRE_COLOURS[w.kind]} lineWidth={2} />;
-                     })}
+                  {wiringStage && cables && <Cables cables={cables} layout={layout} root={root} />}
                </group>
             </StageContext.Provider>
             {!building && (

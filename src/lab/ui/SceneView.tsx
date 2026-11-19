@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Layout, StepId } from "../assembly/layout";
 import type { Environment } from "../engine/environments";
 import type { TestVerdict } from "../model/types";
-import type { SceneWire } from "./scene/LabScene";
+import type { Cable } from "../assembly/cables";
 
 // three.js loads in its own chunk, only once the viewer is on screen
 const LabScene = dynamic(() => import("./scene/LabScene"), { ssr: false, loading: () => null });
@@ -17,9 +17,24 @@ type Props = {
    moving: boolean;
    robotName: string;
    assembly?: { stage: StepId; replay: number; title: string } | null;
-   wires?: SceneWire[];
+   cables?: Cable[];
+   connected?: Set<string>;
    highlight?: string[];
+   /** Errors from the checks: a robot with any stays powered down. */
+   errors?: number;
 };
+
+const LEGEND: [string, string][] = [
+   ["Power", "rgb(225,60,60)"],
+   ["Motor", "rgb(240,165,45)"],
+   ["I²C", "rgb(80,150,255)"],
+   ["UART", "rgb(70,200,120)"],
+   ["USB", "rgb(205,208,215)"],
+   ["PWM", "rgb(245,215,70)"],
+   ["GPIO", "rgb(60,200,200)"],
+   ["Servo bus", "rgb(130,150,255)"],
+   ["Wrong", "rgb(255,80,200)"],
+];
 
 function supportsWebGL(): boolean {
    try {
@@ -30,7 +45,8 @@ function supportsWebGL(): boolean {
    }
 }
 
-export function SceneView({ layout, env, verdict, moving, robotName, assembly, wires, highlight }: Props) {
+export function SceneView({ layout, env, verdict, moving, robotName, assembly, cables, connected, highlight, errors = 0 }: Props) {
+   const [showWiring, setShowWiring] = useState(true);
    const ref = useRef<HTMLDivElement>(null);
    const [mount, setMount] = useState(false);
    const [webgl, setWebgl] = useState(true);
@@ -75,7 +91,9 @@ export function SceneView({ layout, env, verdict, moving, robotName, assembly, w
                   moving={moving}
                   animate={animate && visible}
                   assembly={assembly ? { stage: assembly.stage, replay: assembly.replay } : null}
-                  wires={wires}
+                  cables={cables}
+                  connected={connected}
+                  showWiring={showWiring}
                   highlight={highlight}
                />
             )}
@@ -97,10 +115,32 @@ export function SceneView({ layout, env, verdict, moving, robotName, assembly, w
                </div>
             )}
          </div>
+         {cables && (
+            <div className="flex flex-wrap items-center gap-x-s gap-y-3xs font-mono text-caption text-muted">
+               {!assembly && (
+                  <label className="mr-xs inline-flex min-h-[2.25rem] cursor-pointer items-center gap-2xs text-ink">
+                     <input type="checkbox" checked={showWiring} onChange={(e) => setShowWiring(e.target.checked)} className="size-4 accent-[var(--camera)]" />
+                     Show wiring
+                  </label>
+               )}
+               {(showWiring || assembly) &&
+                  LEGEND.map(([label, colour]) => (
+                     <span key={label} className="inline-flex items-center gap-3xs">
+                        <span className="inline-block h-[3px] w-3 rounded" style={{ background: colour }} aria-hidden="true" />
+                        {label}
+                     </span>
+                  ))}
+            </div>
+         )}
          <figcaption className="text-small text-muted">
             {assembly
                ? `Assembly: ${assembly.title}. Parts from earlier steps are in place; this step's parts move in, then their screws.`
                : `${robotName} in “${env.name}” — ${status}.`}{" "}
+            {!assembly && errors > 0 && (
+               <span className="text-warning">
+                  It stays powered down until the {errors} error{errors > 1 ? "s" : ""} in Checks {errors > 1 ? "are" : "is"} fixed — every required port must be wired to the right connector.{" "}
+               </span>
+            )}
             Drag to orbit.
          </figcaption>
       </figure>
