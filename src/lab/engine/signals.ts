@@ -138,11 +138,11 @@ export function checkSignals(g: Graph, power: PowerAnalysis): Issue[] {
       if (essential.length > 0 && !connected.some((p) => essential.includes(p))) {
          issues.push({
             id: `no-host:${uid}`,
-            severity: node.part.category === "sensor" ? "warning" : "error",
+            severity: node.part.sensor ? "warning" : "error",
             category: "wiring",
             title: `${nodeName(node)} isn't connected to any controller`,
             detail: `Connect ${essential.map((p) => `"${p.label}" (${p.protocol.toUpperCase()})`).join(" or ")} to a controller or computer, otherwise nothing can ${
-               node.part.category === "sensor" ? "read it" : "command it"
+               node.part.sensor ? "read it" : "command it"
             }.`,
             uids: [uid],
          });

@@ -14,7 +14,7 @@ function follow(archetype: ArchetypeId) {
       const g = guideState(build, analyse(build), { skipped, planSeen: false });
       const s = g.current;
       if (visited[visited.length - 1] !== s.stage) visited.push(s.stage);
-      if (s.stage === "assemble" || s.stage === "checks") return { build, visited, stage: s.stage };
+      if (s.stage === "assemble" || s.stage === "checks") return { build, visited, stage: s.stage, skipped };
       const pick = s.parts.find((p) => p.recommended);
       if (pick) {
          build = { ...build, parts: [...build.parts, { uid: `g${n++}`, partId: pick.partId, count: pick.count }] };
@@ -25,10 +25,10 @@ function follow(archetype: ArchetypeId) {
       } else if (s.optional) {
          skipped.add(s.stage);
       } else {
-         return { build, visited, stage: s.stage };
+         return { build, visited, stage: s.stage, skipped };
       }
    }
-   return { build, visited, stage: "stuck" as const };
+   return { build, visited, stage: "stuck" as const, skipped };
 }
 
 describe("lab guide", () => {
@@ -55,7 +55,7 @@ describe("lab guide", () => {
    it("explains the first error and points at the parts", () => {
       const r = follow("tank-rover");
       const b = { ...r.build, wires: r.build.wires.slice(1) };
-      const g = guideState(b, analyse(b), { skipped: new Set(), planSeen: false });
+      const g = guideState(b, analyse(b), { skipped: r.skipped, planSeen: false });
       expect(["wiring", "checks"]).toContain(g.current.stage);
       expect(g.current.highlight.length).toBeGreaterThan(0);
    });

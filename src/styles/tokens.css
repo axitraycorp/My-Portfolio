@@ -63,6 +63,12 @@
 }
 
 :root {
+   /* Text fields: light paper with black text and a black caret in both themes */
+   --field: oklch(0.975 0.004 255);
+   --field-ink: oklch(0.16 0.01 255);
+   --field-muted: oklch(0.47 0.02 255);
+   --field-line: oklch(0.7 0.015 255);
+
    /* Fluid type scale (≈1.2 at 375px → ≈1.25 at 1440px) */
    --step--2: clamp(0.69rem, 0.68rem + 0.05vw, 0.72rem);
    --step--1: clamp(0.83rem, 0.81rem + 0.08vw, 0.875rem);

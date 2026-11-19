@@ -250,7 +250,7 @@ const STAGES: { title: string; add: PartCategory[]; stage: StepId; how: string[]
    },
    {
       title: "Power test 4 — drivers and sensors",
-      add: ["motor-driver", "servo-driver", "sensor"],
+      add: ["motor-driver", "servo-driver", "camera", "sensor"],
       stage: "sensors",
       how: [
          "Motors and servos still unplugged. Check each sensor answers (i2cdetect, lsusb, the LiDAR spins and streams).",
@@ -352,7 +352,7 @@ const ASSEMBLY: { stage: StepId; title: string; intro: string }[] = [
    { stage: "regulation", title: "Regulators", intro: "Mount regulators close to what they feed and away from the IMU." },
    { stage: "brains", title: "Controller, computer and cooling", intro: "Use nylon or brass standoffs; never let a board touch a metal deck." },
    { stage: "drivers", title: "Motor drivers and servo controllers", intro: "Put drivers next to the motors they drive to keep high-current leads short." },
-   { stage: "sensors", title: "Sensors", intro: "Mount sensors last so nothing knocks them while you work." },
+   { stage: "sensors", title: "Cameras and sensors", intro: "Mount sensors last so nothing knocks them while you work." },
 ];
 
 export function buildPlan(build: Build, a: Analysis = analyse(build)): Plan {

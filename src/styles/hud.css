@@ -192,6 +192,19 @@
    }
 
    /* ── Buttons */
+   /* Shared text-field look */
+   .field {
+      color-scheme: light;
+      background: var(--field);
+      color: var(--field-ink);
+      caret-color: var(--field-ink);
+      border: 1px solid var(--field-line);
+   }
+   .field::placeholder {
+      color: var(--field-muted);
+      opacity: 1;
+   }
+
    .btn {
       display: inline-flex;
       align-items: center;

@@ -5,7 +5,7 @@ export const sensors: Part[] = [
    {
       id: "depth-camera-usb",
       name: "RGB-D depth camera (USB 3)",
-      category: "sensor",
+      category: "camera",
       description:
          "Colour + depth (stereo/IR). Needs a Linux computer with USB 3 for drivers and bandwidth.",
       massG: 80,
@@ -19,7 +19,7 @@ export const sensors: Part[] = [
    {
       id: "csi-camera-12mp",
       name: "12 MP CSI camera module",
-      category: "sensor",
+      category: "camera",
       description: "Ribbon-cable camera, powered by the host. Needs a CSI port (Raspberry Pi / Jetson).",
       massG: 4,
       priceUsd: 25,
@@ -29,7 +29,7 @@ export const sensors: Part[] = [
    {
       id: "usb-webcam",
       name: "1080p USB camera",
-      category: "sensor",
+      category: "camera",
       description: "Plain USB UVC camera; easy to use, no depth.",
       massG: 60,
       priceUsd: 30,

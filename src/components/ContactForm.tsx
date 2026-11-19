@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 const inputClass =
-   "mt-3xs w-full rounded-hud border border-line bg-background px-xs py-2xs text-ink transition-colors placeholder:text-muted focus:border-camera focus:outline-none focus-visible:shadow-[var(--glow)]";
+   "field mt-3xs w-full rounded-hud px-xs py-2xs transition-colors focus:border-camera focus:outline-none focus-visible:shadow-[var(--glow)]";
 
 export function ContactForm() {
    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");

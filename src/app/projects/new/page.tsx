@@ -7,7 +7,7 @@ type Skill = { id: string; name: string };
 
 const TOKEN_KEY = "portfolio-admin-token";
 const inputClass =
-   "w-full border border-gray-300 dark:border-neutral-700 bg-transparent p-2 rounded";
+   "field w-full rounded p-2";
 
 const emptyForm = {
    title: "",

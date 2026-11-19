@@ -16,6 +16,7 @@ export type GuideStageId =
    | "regulation"
    | "drivers"
    | "actuators"
+   | "cameras"
    | "sensors"
    | "cooling"
    | "wiring"
@@ -63,6 +64,7 @@ const TITLES: Record<GuideStageId, string> = {
    regulation: "Regulators",
    drivers: "Drivers",
    actuators: "Motors & servos",
+   cameras: "Cameras",
    sensors: "Sensors",
    cooling: "Cooling",
    wiring: "Wiring",
@@ -71,7 +73,7 @@ const TITLES: Record<GuideStageId, string> = {
    done: "Ready",
 };
 
-const ORDER: GuideStageId[] = ["frame", "brain", "power", "regulation", "drivers", "actuators", "sensors", "cooling", "wiring", "checks", "assemble", "done"];
+const ORDER: GuideStageId[] = ["frame", "brain", "power", "regulation", "drivers", "actuators", "cameras", "sensors", "cooling", "wiring", "checks", "assemble", "done"];
 
 const STAGE_CATEGORIES: Partial<Record<GuideStageId, PartCategory[]>> = {
    frame: ["frame"],
@@ -79,11 +81,12 @@ const STAGE_CATEGORIES: Partial<Record<GuideStageId, PartCategory[]>> = {
    power: ["battery", "protection"],
    regulation: ["regulator"],
    drivers: ["motor-driver", "servo-driver"],
+   cameras: ["camera"],
    sensors: ["sensor"],
    cooling: ["cooling"],
 };
 
-const OPTIONAL: GuideStageId[] = ["regulation", "drivers", "sensors", "cooling"];
+const OPTIONAL: GuideStageId[] = ["regulation", "drivers", "cameras", "sensors", "cooling"];
 
 const partsIn = (build: Build, cats: PartCategory[]) =>
    build.parts.filter((p) => {
@@ -229,6 +232,7 @@ export function guideState(build: Build, a: Analysis, opts: { skipped: Set<Guide
       regulation: template.parts.filter((p) => getPart(p.partId)?.category === "regulator").every((r) => build.parts.some((p) => p.partId === r.partId)),
       drivers: (!needsMotorDriver || has(build, "motor-driver")) && (!needsServoDriver || has(build, "servo-driver")),
       actuators: count("motor") >= (spec?.motors ?? 0) && count("servo") >= (spec?.servos ?? 0),
+      cameras: has(build, "camera"),
       sensors: has(build, "sensor"),
       cooling: !has(build, "compute") || has(build, "cooling"),
       wiring: build.wires.length > 0 && wires.length === 0,
@@ -326,10 +330,18 @@ function describe(
             parts: sugg,
          };
       }
+      case "cameras":
+         return {
+            ...base,
+            say: "Eyes next. A depth camera sees shape and distance for grasping and mapping; a CSI camera is small and fast on a Pi; a USB webcam is the simplest. Cameras need a Linux computer to process the images.",
+            tab: "parts",
+            highlight: uidsOf(["compute"]),
+            parts: suggestFor(build, cats, (p) => `${p.sensor?.provides.join(", ") ?? ""}${p.sensor?.needsLinuxHost ? " · needs Linux" : ""}`),
+         };
       case "sensors":
          return {
             ...base,
-            say: "Give it senses: a camera to see, a LiDAR or ultrasonic to measure distance, an IMU to know which way is up.",
+            say: "Other senses: a LiDAR or ultrasonic to measure distance, an IMU to know which way is up, a microphone to hear commands.",
             tab: "parts",
             parts: suggestFor(build, cats, (p) => p.sensor?.provides.join(", ") ?? ""),
          };

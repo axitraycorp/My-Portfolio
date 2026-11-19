@@ -14,6 +14,7 @@ const TIER: Record<PartCategory, number> = {
    cooling: 2,
    "motor-driver": 3,
    "servo-driver": 3,
+   camera: 3,
    sensor: 3,
    motor: 4,
    servo: 4,

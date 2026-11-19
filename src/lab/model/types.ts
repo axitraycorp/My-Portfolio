@@ -24,6 +24,7 @@ export type PartCategory =
    | "servo-driver"
    | "motor"
    | "servo"
+   | "camera"
    | "sensor"
    | "battery"
    | "regulator"

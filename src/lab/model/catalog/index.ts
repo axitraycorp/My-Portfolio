@@ -39,7 +39,8 @@ export const CATEGORY_LABELS: Record<PartCategory, string> = {
    "servo-driver": "Servo controller",
    motor: "Drive motors",
    servo: "Servos",
-   sensor: "Sensors",
+   camera: "Cameras",
+   sensor: "Sensors (non-camera)",
    battery: "Power source",
    regulator: "Regulators",
    protection: "Protection",
@@ -59,5 +60,6 @@ export const CATEGORY_ORDER: PartCategory[] = [
    "motor",
    "servo-driver",
    "servo",
+   "camera",
    "sensor",
 ];

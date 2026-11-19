@@ -72,6 +72,7 @@ function stepFor(part: Part): StepId {
       case "motor-driver":
       case "servo-driver":
          return "drivers";
+      case "camera":
       case "sensor":
          return "sensors";
    }
@@ -278,7 +279,7 @@ export function computeLayout(build: Build): Layout {
    const cooled = new Set<string>();
    const stacks = new Map<Placement, Placement>();
    let frontCount = 0;
-   const fronts = rest.filter((u) => u.part.category === "sensor" && sensorZone(u.part) === "front");
+   const fronts = rest.filter((u) => u.part.sensor !== undefined && sensorZone(u.part) === "front");
 
    for (const u of rest) {
       if (u.part.category === "battery") continue;
@@ -301,7 +302,7 @@ export function computeLayout(build: Build): Layout {
             continue;
          }
       }
-      if (u.part.category === "sensor") {
+      if (u.part.sensor) {
          const zone = sensorZone(u.part);
          if (zone === "top") {
             u.zone = "top";
