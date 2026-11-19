@@ -65,3 +65,11 @@ e2e/                          Playwright tests
 - Model from `ANTHROPIC_MODEL` (default `claude-haiku-5-5`), key from `ANTHROPIC_API_KEY`. Without a key the UI uses the scripted tour.
 - Tools are executed in the browser: `scroll_to_section`, `highlight_element`, `open_project`, `show_metric`, `suggest_questions`.
 - Section ids used by tools and the tour: `hero`, `robot`, `build-log`, `results`, `projects`, `about`, `contact`.
+
+## Robot Lab (`/lab`)
+
+- `src/lab/model`: typed parts catalogue, archetype templates, build validation (zod). Generic parts only — no vendor names, logos or product specs.
+- `src/lab/engine`: pure, deterministic checks (graph → power → signals → compute/thermal → mechanics → environments). Shared by browser and server; covered by `src/lab/**/__tests__`. Every starter template must stay at zero errors and warnings.
+- `src/lab/server`: `server-only` auth (scrypt, jose JWT cookie `lab_session`, session_version revocation), Neon queries. `src/app/api/lab/*`: auth, admin, builds, advisor.
+- Accounts are admin-created only (no sign-up). Quotas `max_builds` / `advisor_credits` are enforced in SQL. Never use the production database as a Prisma shadow database.
+- `src/lab/ui`: Workbench and panels; `scene/LabScene.tsx` is the lazy R3F view (robot materials are theme-independent).

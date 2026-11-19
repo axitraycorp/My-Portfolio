@@ -1,0 +1,179 @@
+/* Robot Lab (/lab). Severity colours: error = warning token, warn = lidar, ok = success. */
+
+@layer components {
+   .lab-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+   }
+
+   .lab-input,
+   .lab-select {
+      min-height: 2.5rem;
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--background);
+      color: var(--ink);
+      padding: 0.4rem 0.6rem;
+      font-size: var(--step--1);
+   }
+   .lab-input:focus-visible,
+   .lab-select:focus-visible {
+      outline: none;
+      box-shadow: var(--glow);
+   }
+
+   .lab-btn-sm {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4ch;
+      min-height: 2.25rem;
+      min-width: 2.25rem;
+      padding: 0.25rem 0.6rem;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      font-family: var(--font-mono);
+      font-size: var(--step--2);
+      color: var(--ink);
+      background: transparent;
+      cursor: pointer;
+   }
+   .lab-btn-sm:hover {
+      border-color: var(--camera);
+      color: var(--camera);
+   }
+   .lab-btn-sm:focus-visible {
+      outline: none;
+      box-shadow: var(--glow);
+   }
+   .lab-btn-sm[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+   }
+
+   .lab-sev {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4ch;
+      padding: 0.05rem 0.45rem;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: var(--step--2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+   }
+   .lab-sev[data-sev="error"],
+   .lab-sev[data-sev="fail"] {
+      color: var(--warning);
+   }
+   .lab-sev[data-sev="warning"],
+   .lab-sev[data-sev="warn"] {
+      color: var(--lidar);
+   }
+   .lab-sev[data-sev="info"] {
+      color: var(--muted);
+   }
+   .lab-sev[data-sev="pass"],
+   .lab-sev[data-sev="ok"] {
+      color: var(--success);
+   }
+
+   .lab-row[data-highlight] {
+      outline: 1px solid var(--camera);
+      background: color-mix(in oklch, var(--camera) 8%, transparent);
+   }
+
+   .lab-tabs {
+      display: flex;
+      gap: 0.25rem;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line);
+      scrollbar-width: thin;
+   }
+   .lab-tabs [role="tab"] {
+      flex: none;
+      min-height: 2.75rem;
+      padding: 0.4rem 0.9rem;
+      border-bottom: 2px solid transparent;
+      font-family: var(--font-mono);
+      font-size: var(--step--1);
+      color: var(--muted);
+      cursor: pointer;
+   }
+   .lab-tabs [role="tab"][aria-selected="true"] {
+      color: var(--ink);
+      border-bottom-color: var(--camera);
+   }
+   .lab-tabs [role="tab"]:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: -2px;
+   }
+
+   .lab-bar {
+      position: relative;
+      height: 0.5rem;
+      border-radius: 999px;
+      background: var(--surface-raised);
+      overflow: hidden;
+   }
+   .lab-bar > span {
+      position: absolute;
+      inset-block: 0;
+      left: 0;
+      border-radius: inherit;
+   }
+
+   .lab-dl {
+      display: grid;
+      grid-template-columns: minmax(7rem, auto) 1fr;
+      gap: 0.2rem 0.9rem;
+      font-size: var(--step--1);
+   }
+   .lab-dl dt {
+      font-family: var(--font-mono);
+      font-size: var(--step--2);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding-top: 0.15rem;
+   }
+
+   .lab-advice h3 {
+      margin-top: 1rem;
+      font-size: var(--step-0);
+      font-weight: 600;
+   }
+   .lab-advice ul,
+   .lab-advice ol {
+      padding-left: 1.2rem;
+      list-style: disc;
+   }
+   .lab-advice ol {
+      list-style: decimal;
+   }
+   .lab-advice li + li,
+   .lab-advice p + p {
+      margin-top: 0.4rem;
+   }
+
+   .lab-scene {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: radial-gradient(
+         120% 90% at 50% 100%,
+         color-mix(in oklch, var(--camera) 10%, var(--background)),
+         var(--background)
+      );
+   }
+   .lab-scene canvas {
+      touch-action: pan-y;
+   }
+}

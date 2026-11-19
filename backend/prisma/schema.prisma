@@ -46,3 +46,38 @@ model ProjectSkill {
 
   @@id([projectId, skillId])
 }
+
+// ─── Robot Lab (queried directly by the Next.js app) ─────────────────────────
+
+model LabUser {
+  id                 String     @id @default(uuid())
+  email              String     @unique
+  passwordHash       String     @map("password_hash")
+  /// "admin" | "user" — accounts are created by the admin only
+  role               String     @default("user")
+  disabled           Boolean    @default(false)
+  maxBuilds          Int        @default(3) @map("max_builds")
+  advisorCredits     Int        @default(5) @map("advisor_credits")
+  advisorUsed        Int        @default(0) @map("advisor_used")
+  /// Bumped to sign the user out everywhere
+  sessionVersion     Int        @default(1) @map("session_version")
+  mustChangePassword Boolean    @default(true) @map("must_change_password")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  builds             LabBuild[]
+
+  @@map("lab_users")
+}
+
+model LabBuild {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      LabUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  archetype String
+  data      Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("lab_builds")
+}

@@ -71,6 +71,9 @@ npm run start:dev              # http://localhost:5000
 | `ANTHROPIC_MODEL` | no | Model override (default `claude-haiku-5-5`) |
 | `RESEND_API_KEY`, `CONTACT_FORM_TO` | for contact form | Email delivery via Resend |
 | `CONTACT_FORM_FROM` | no | Sender on a domain verified in Resend |
+| `DATABASE_URL` | for Robot Lab accounts | Neon Postgres (same database as the backend) |
+| `AUTH_SECRET` | for Robot Lab accounts | 32+ random characters; signs lab session cookies |
+| `LAB_ADVISOR_MODEL` | no | Robot Lab advisor model (default `claude-opus-5-5`); uses `ANTHROPIC_API_KEY` |
 
 ### Backend (Render)
 
@@ -95,6 +98,17 @@ npm run start:dev              # http://localhost:5000
 - Requests are limited to 400 output tokens, the last 12 messages, and 1000 characters per message.
 - Rate limit: an in-memory token bucket per IP (8 burst, ~10/min). It's per serverless instance, so swap in Upstash (`@upstash/ratelimit`) for a global limit; see `src/lib/assistant/rate-limit.ts`.
 - `503` without a key; `429` when rate limited. The UI switches to the scripted tour on either.
+
+## Robot Lab (`/lab`)
+
+A browser robotics simulator: 8 robot types (mecanum, tank, Ackermann, arm, mobile manipulator, quadruped, hexapod, humanoid), a catalogue of generic parts (controllers, Linux computers with CPU/GPU/RAM/TOPS, drivers, motors, servos, sensors, batteries, regulators, cooling, fuses), free-form wiring, and a deterministic rules engine (`src/lab/engine`) that checks power distribution, wiring faults, logic levels, I²C/bus capacity, heat and torque, then scores nine test environments. A lazy React Three Fiber scene shows the robot in each environment.
+
+- Anyone can design, test, export and import builds. Saving and the AI advisor need an account.
+- **No public sign-up.** The admin creates accounts at `/lab/admin`; each gets a one-time password (shown once) and must set their own on first sign-in. Per-user quotas: build slots (default 3) and advisor reviews (default 5). Users ask the owner for more.
+- Bootstrap or reset the admin: `DATABASE_URL=… node scripts/lab-create-admin.mjs you@example.com [--reset]`.
+- Tables `lab_users` / `lab_builds` are defined in `backend/prisma/schema.prisma` (migration `20261120000000_robot_lab`).
+- Sessions: scrypt-hashed passwords, HS256 JWT in an httpOnly cookie, revoked by bumping `session_version` (password change, disable, "sign out everywhere"). Mutating routes require same-origin; login is rate-limited.
+- `POST /api/lab/advisor` re-runs the analysis server-side, takes one credit (refunded if the model call fails before any text), and streams NDJSON like the assistant.
 
 ## Deploy
 
