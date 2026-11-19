@@ -32,6 +32,30 @@ test("switching environments shows that wheeled robots can't climb stairs", asyn
    await expect(page.getByRole("button", { name: /Stairs/ })).toContainText("fail");
 });
 
+test("the assembly plan walks from frame to power-on tests", async ({ page }) => {
+   await page.goto("/lab/build?type=mobile-manipulator");
+   await page.getByRole("tab", { name: "Assembly plan" }).click();
+   const steps = page.getByRole("list", { name: "Assembly and bring-up steps" });
+   await expect(steps.getByRole("button", { name: /Frame/ })).toHaveAttribute("aria-expanded", "true");
+   await page.getByRole("button", { name: "Next step →" }).click();
+   await expect(steps.getByRole("button", { name: /Motors, servos and wheels/ })).toHaveAttribute("aria-expanded", "true");
+   await expect(steps).toContainText("Turret, Shoulder, Elbow");
+   await steps.getByRole("button", { name: /Power test 1/ }).click();
+   await expect(steps).toContainText("Measure with a multimeter");
+   await expect(page.getByText("All 5 power-on test stages pass.")).toBeVisible();
+});
+
+test("the plan tab has no WCAG A/AA violations", async ({ page }) => {
+   await page.goto("/lab/build?type=hexapod");
+   await page.getByRole("tab", { name: "Assembly plan" }).click();
+   await expect(page.getByRole("list", { name: "Assembly and bring-up steps" })).toBeVisible();
+   const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .exclude(".lab-scene canvas")
+      .analyze();
+   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
+});
+
 for (const theme of ["dark", "light"] as const) {
    for (const path of ["/lab", "/lab/build?type=robot-dog", "/lab/login"]) {
       test(`${path} has no WCAG A/AA violations in the ${theme} theme`, async ({ page }) => {
@@ -53,4 +77,9 @@ test("lab pages have no horizontal scroll", async ({ page }) => {
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       expect(overflow, `${path} overflows by ${overflow}px`).toBeLessThanOrEqual(0);
    }
+   await page.goto("/lab/build?type=humanoid");
+   await page.getByRole("tab", { name: "Assembly plan" }).click();
+   await page.getByRole("button", { name: /Wiring/ }).click();
+   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+   expect(overflow, `plan tab overflows by ${overflow}px`).toBeLessThanOrEqual(0);
 });

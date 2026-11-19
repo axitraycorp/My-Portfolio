@@ -4,6 +4,8 @@ import { buildGraph, nodeName, type Graph } from "./graph";
 import { analysePower, type PowerAnalysis } from "./power";
 import { checkSignals } from "./signals";
 import { checkComputeWiring, checkThermal, summariseCompute, type ComputeSummary } from "./compute";
+import { computeLayout, type Layout } from "../assembly/layout";
+import { checkFit } from "./fit";
 import { buildMechanics, checkMechanics, type MechanicsModel } from "./mechanical";
 
 export interface Analysis {
@@ -12,6 +14,7 @@ export interface Analysis {
    compute: ComputeSummary;
    mechanics: MechanicsModel;
    report: CheckReport;
+   layout: Layout;
 }
 
 const ORDER: Record<Severity, number> = { error: 0, warning: 1, info: 2 };
@@ -85,6 +88,7 @@ export function analyse(build: Build): Analysis {
    const power = analysePower(graph);
    const compute = summariseCompute(graph, power);
    const mechanics = buildMechanics(graph, power);
+   const layout = computeLayout(build);
 
    const issues = dedupe([
       ...graph.issues,
@@ -94,6 +98,7 @@ export function analyse(build: Build): Analysis {
       ...checkComputeWiring(graph),
       ...checkThermal(compute),
       ...checkMechanics(graph, mechanics),
+      ...checkFit(layout),
    ]).sort((a, b) => ORDER[a.severity] - ORDER[b.severity]);
 
    const all = [...graph.nodes.values()];
@@ -129,6 +134,7 @@ export function analyse(build: Build): Analysis {
       power,
       compute,
       mechanics,
+      layout,
       report: { issues, stats, counts, ok: counts.error === 0 },
    };
 }

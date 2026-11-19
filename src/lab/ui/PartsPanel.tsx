@@ -3,6 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { CATEGORY_LABELS, CATEGORY_ORDER, PARTS, getPart } from "../model/catalog";
 import type { Build, PartCategory, PartInstance } from "../model/types";
+import { PartDrawing } from "./PartDrawing";
 import { PartSpecs } from "./PartSpecs";
 
 type Props = {
@@ -67,6 +68,11 @@ export function PartsPanel({ build, highlight, onAdd, onRemove, onChange }: Prop
                               data-highlight={highlight.has(inst.uid) ? "" : undefined}
                            >
                               <div className="flex flex-wrap items-center gap-xs">
+                                 {part.category !== "frame" && (
+                                    <span className="w-[4.5rem] flex-none" aria-hidden="true">
+                                       <PartDrawing part={part} compact />
+                                    </span>
+                                 )}
                                  <span className="font-mono text-caption text-muted">[{inst.uid}]</span>
                                  <span className="min-w-0 flex-1 font-medium">{part.name}</span>
                                  <div className="flex items-center gap-3xs" role="group" aria-label={`Quantity of ${part.name}`}>
@@ -176,6 +182,11 @@ export function PartsPanel({ build, highlight, onAdd, onRemove, onChange }: Prop
                {catalog.map((part) => (
                   <li key={part.id} className="lab-panel p-xs">
                      <div className="flex items-start gap-xs">
+                        {part.category !== "frame" && (
+                           <div className="w-[5.5rem] flex-none" aria-hidden="true">
+                              <PartDrawing part={part} compact />
+                           </div>
+                        )}
                         <div className="min-w-0 flex-1">
                            <p className="font-medium">{part.name}</p>
                            <p className="font-mono text-caption text-muted">

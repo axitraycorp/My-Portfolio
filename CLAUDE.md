@@ -72,4 +72,5 @@ e2e/                          Playwright tests
 - `src/lab/engine`: pure, deterministic checks (graph → power → signals → compute/thermal → mechanics → environments). Shared by browser and server; covered by `src/lab/**/__tests__`. Every starter template must stay at zero errors and warnings.
 - `src/lab/server`: `server-only` auth (scrypt, jose JWT cookie `lab_session`, session_version revocation), Neon queries. `src/app/api/lab/*`: auth, admin, builds, advisor.
 - Accounts are admin-created only (no sign-up). Quotas `max_builds` / `advisor_credits` are enforced in SQL. Never use the production database as a Prisma shadow database.
-- `src/lab/ui`: Workbench and panels; `scene/LabScene.tsx` is the lazy R3F view (robot materials are theme-independent).
+- `src/lab/model/physical.ts`: size (mm), hole pattern, screw, standoff and mounting method for every part (nominal values). `src/lab/assembly`: frame geometry (decks, battery bay, motor anchors, joints), `computeLayout` (deck packing, upper decks on standoffs, stacking) and `buildPlan` (assembly steps, hardware, wire gauges, staged power-on tests). Fit checks live in `engine/fit.ts`.
+- `src/lab/ui`: Workbench and panels; `scene/` is the lazy R3F view built from the layout in mm (robot materials are theme-independent). `PartDrawing` renders dimensioned SVG drawings.

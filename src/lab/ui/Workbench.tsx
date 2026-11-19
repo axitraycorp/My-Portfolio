@@ -1,11 +1,11 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { analyse } from "../engine";
 import { ENVIRONMENTS, runEnvironment } from "../engine/environments";
 import { getArchetype, templateFor } from "../model/archetypes";
-import { getPart } from "../model/catalog";
 import type { ArchetypeId, Build, Issue, PartInstance } from "../model/types";
 import { parseBuild } from "../model/validation";
 import { AdvisorPanel } from "./AdvisorPanel";
@@ -18,11 +18,18 @@ import { WiringPanel } from "./WiringPanel";
 import { nextId, parseRef } from "./ports";
 import { postJson, useLabUser } from "./useLabUser";
 
-type Tab = "issues" | "parts" | "wiring" | "power" | "advisor";
+// The plan (drawings, bring-up analysis) loads only when its tab opens
+const PlanPanel = dynamic(() => import("./PlanPanel").then((m) => m.PlanPanel), {
+   ssr: false,
+   loading: () => <p className="text-muted">Loading the assembly plan…</p>,
+});
+
+type Tab = "issues" | "parts" | "wiring" | "plan" | "power" | "advisor";
 const TABS: { id: Tab; label: string }[] = [
    { id: "issues", label: "Checks" },
    { id: "parts", label: "Parts" },
    { id: "wiring", label: "Wiring" },
+   { id: "plan", label: "Assembly plan" },
    { id: "power", label: "Power & stats" },
    { id: "advisor", label: "AI advisor" },
 ];
@@ -63,17 +70,6 @@ export function Workbench({ archetype, savedId: initialId }: Props) {
    const env = ENVIRONMENTS.find((e) => e.id === envId) ?? ENVIRONMENTS[0];
    const envResult = results.find((r) => r.environmentId === env.id)!;
    const highlight = useMemo(() => new Set(activeIssue?.uids ?? []), [activeIssue]);
-
-   const sceneRobot = useMemo(() => {
-      const parts = build.parts.map((p) => getPart(p.partId)).filter((p) => p !== undefined);
-      return {
-         archetype: build.archetype,
-         lidar: parts.some((p) => p.sensor?.type === "lidar"),
-         camera: parts.some((p) => p.sensor?.type === "camera" || p.sensor?.type === "depth-camera"),
-         fan: parts.some((p) => p.category === "cooling" && /fan|active|cooler/i.test(`${p.id} ${p.name}`)),
-         computer: parts.some((p) => p.category === "compute"),
-      };
-   }, [build]);
 
    const update = useCallback((fn: (b: Build) => Build) => {
       setBuild((b) => fn(b));
@@ -267,11 +263,12 @@ export function Workbench({ archetype, savedId: initialId }: Props) {
 
          <div className="grid gap-l lg:grid-cols-[1.25fr_1fr]">
             <SceneView
-               robot={sceneRobot}
+               layout={analysis.layout}
                env={env}
                verdict={envResult.verdict}
                moving={envResult.verdict !== "fail"}
                robotName={build.name || arche?.name || "Robot"}
+               highlight={activeIssue?.uids}
             />
             <TestsPanel results={results} envId={env.id} onSelect={setEnvId} />
          </div>
@@ -306,6 +303,7 @@ export function Workbench({ archetype, savedId: initialId }: Props) {
                {tab === "wiring" && (
                   <WiringPanel build={build} issues={report.issues} highlight={highlight} onAddWire={addWire} onRemoveWire={removeWire} />
                )}
+               {tab === "plan" && <PlanPanel build={build} analysis={analysis} />}
                {tab === "power" && <PowerPanel stats={report.stats} compute={analysis.compute} />}
                {tab === "advisor" && (
                   <AdvisorPanel build={build} user={account.user} loading={account.loading} onUsed={() => void account.refresh()} />

@@ -1,9 +1,13 @@
 import type { Part } from "../model/types";
+import { getPhysical } from "../model/physical";
+import { PartDrawing } from "./PartDrawing";
 import { portSummary } from "./ports";
 
 /** Datasheet-style detail for one catalogue part. */
 export function PartSpecs({ part }: { part: Part }) {
+   const ph = getPhysical(part.id);
    const rows: [string, string][] = [
+      ...(ph.sizeMm[0] > 0 ? ([["Size", `${ph.sizeMm.join(" × ")} mm (L × W × H)`]] as [string, string][]) : []),
       ["Mass", `${part.massG} g`],
       ["Price", `≈ $${part.priceUsd}`],
    ];
@@ -48,6 +52,15 @@ export function PartSpecs({ part }: { part: Part }) {
    return (
       <div className="flex flex-col gap-xs">
          <p className="text-small text-muted">{part.description}</p>
+         <div className="rounded-hud border border-line bg-background p-2xs">
+            <PartDrawing part={part} />
+         </div>
+         {ph.sizeMm[0] > 0 && (
+            <p className="text-small">
+               <span className="mono-caps text-muted">Mounting </span>
+               {ph.mounting}
+            </p>
+         )}
          <dl className="lab-dl">
             {rows.map(([k, v]) => (
                <div key={k} className="contents">
